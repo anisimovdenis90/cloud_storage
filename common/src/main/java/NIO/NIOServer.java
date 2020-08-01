@@ -56,6 +56,18 @@ public class NIOServer implements Runnable {
         }
     }
 
+    private void acceptClient(SelectionKey key) throws IOException {
+        SocketChannel channel = ((ServerSocketChannel) key.channel()).accept();
+        channel.configureBlocking(false);
+        channel.register(selector, SelectionKey.OP_READ);
+        sendMessageToClient(String.valueOf(clientId), channel);
+        clientDirectory = Paths.get(CLIENT_DIR_PREFIX + "/" + clientId);
+        if (!Files.exists(clientDirectory)) {
+            Files.createDirectory(clientDirectory);
+        }
+        clientId++;
+    }
+
     private void readFromClient(SelectionKey key) throws IOException, InterruptedException {
         String message = readMessageFromClient(key);
         if ("end".equals(message)) {
@@ -69,19 +81,6 @@ public class NIOServer implements Runnable {
             getFileFromClient(data[1], key);
         }
     }
-
-    private void acceptClient(SelectionKey key) throws IOException {
-        SocketChannel channel = ((ServerSocketChannel) key.channel()).accept();
-        channel.configureBlocking(false);
-        channel.register(selector, SelectionKey.OP_READ);
-        sendMessageToClient(String.valueOf(clientId), channel);
-        clientDirectory = Paths.get(CLIENT_DIR_PREFIX + "/" + clientId);
-        if (!Files.exists(clientDirectory)) {
-            Files.createDirectory(clientDirectory);
-        }
-        clientId++;
-    }
-
 
     private void sendMessageToClient(String massage, SocketChannel channel) throws IOException {
         byte[] byteMessage = massage.getBytes();

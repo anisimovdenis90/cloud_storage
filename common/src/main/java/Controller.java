@@ -94,7 +94,7 @@ public class Controller implements Initializable {
     private String readMessageFromServer() throws IOException {
         int messageLength = is.readInt();
         byte[] byteMessage = new byte[messageLength];
-        is.read(byteMessage,0, messageLength);
+        is.read(byteMessage, 0, messageLength);
         String response = new String(byteMessage);
         System.out.println("Сообщение от сервера: " + response);
         return response;
