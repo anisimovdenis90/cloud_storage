@@ -82,8 +82,8 @@ public class NIOServer implements Runnable {
         }
     }
 
-    private void sendMessageToClient(String massage, SocketChannel channel) throws IOException {
-        byte[] byteMessage = massage.getBytes();
+    private void sendMessageToClient(String message, SocketChannel channel) throws IOException {
+        byte[] byteMessage = message.getBytes();
         ByteBuffer messageLength = ByteBuffer.allocate(Integer.BYTES);
         messageLength.putInt(byteMessage.length);
         messageLength.flip();
