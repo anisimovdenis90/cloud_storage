@@ -83,31 +83,31 @@ public class NIOServer implements Runnable {
     }
 
     private void sendMessageToClient(String message, SocketChannel channel) throws IOException {
-        byte[] byteMessage = message.getBytes();
+        byte[] messageBuffer = message.getBytes();
         ByteBuffer messageLength = ByteBuffer.allocate(Integer.BYTES);
-        messageLength.putInt(byteMessage.length);
+        messageLength.putInt(messageBuffer.length);
         messageLength.flip();
         channel.write(messageLength);
-        channel.write(ByteBuffer.wrap(byteMessage));
+        channel.write(ByteBuffer.wrap(messageBuffer));
     }
 
     private String readMessageFromClient(SelectionKey key) throws IOException, InterruptedException {
         SocketChannel channel = (SocketChannel) key.channel();
         StringBuilder message = new StringBuilder();
         Thread.sleep(100);
-        ByteBuffer byteLength = ByteBuffer.allocate(Integer.BYTES);
-        int count = channel.read(byteLength);
+        ByteBuffer messageLengthBuffer = ByteBuffer.allocate(Integer.BYTES);
+        int count = channel.read(messageLengthBuffer);
         if (count == -1) {
             key.channel().close();
             return "end";
         }
-        byteLength.flip();
-        int messageLength = byteLength.getInt();
-        ByteBuffer byteMessage = ByteBuffer.allocate(messageLength);
-        channel.read(byteMessage);
-        byteMessage.flip();
-        while (byteMessage.hasRemaining()) {
-            message.append((char) byteMessage.get());
+        messageLengthBuffer.flip();
+        int messageLength = messageLengthBuffer.getInt();
+        ByteBuffer messageBuffer = ByteBuffer.allocate(messageLength);
+        channel.read(messageBuffer);
+        messageBuffer.flip();
+        while (messageBuffer.hasRemaining()) {
+            message.append((char) messageBuffer.get());
         }
         System.out.println("Сообщение от клиента: " + message);
         return message.toString();
@@ -117,11 +117,11 @@ public class NIOServer implements Runnable {
         System.out.println("Начало передачи файла от клиента " + fileName);
         SocketChannel channel = (SocketChannel) key.channel();
         sendMessageToClient("OK", channel);
-        ByteBuffer byteLength = ByteBuffer.allocate(Long.BYTES);
+        ByteBuffer fileSizeBuffer = ByteBuffer.allocate(Long.BYTES);
         Thread.sleep(100);
-        channel.read(byteLength);
-        byteLength.flip();
-        long fileSize = byteLength.getLong();
+        channel.read(fileSizeBuffer);
+        fileSizeBuffer.flip();
+        long fileSize = fileSizeBuffer.getLong();
         int totalBytes = 0;
         int lastBytes;
         int readBytes;
@@ -155,11 +155,11 @@ public class NIOServer implements Runnable {
         if (Files.exists(file)) {
             System.out.println("Начало отправки файла клиенту " + fileName);
             sendMessageToClient("OK", channel);
-            long fileSizeLong = Files.size(file);
-            ByteBuffer fileSize = ByteBuffer.allocate(Long.BYTES);
-            fileSize.putLong(fileSizeLong);
-            fileSize.flip();
-            channel.write(fileSize);
+            long fileSize = Files.size(file);
+            ByteBuffer fileSizeBuffer = ByteBuffer.allocate(Long.BYTES);
+            fileSizeBuffer.putLong(fileSize);
+            fileSizeBuffer.flip();
+            channel.write(fileSizeBuffer);
             try (RandomAccessFile accessFile = new RandomAccessFile(file.toFile(), "r")) {
                 FileChannel fileReader = accessFile.getChannel();
                 int readBytes = fileReader.read(buffer);
