@@ -32,6 +32,7 @@ public class NIOServer implements Runnable {
                     iterator.remove();
                     if (key.isAcceptable()) {
                         SocketChannel channel = ((ServerSocketChannel) key.channel()).accept();
+
                         new NIOClientHandler(channel).start();
                     }
                 }

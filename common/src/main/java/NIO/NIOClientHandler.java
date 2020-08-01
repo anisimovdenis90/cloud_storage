@@ -14,18 +14,18 @@ import java.util.Iterator;
 
 public class NIOClientHandler {
 
+    private static final int DEFAULT_BUFFER_SIZE = 1024;
+    private static final String CLIENT_DIR_PREFIX = "./common/src/main/resources/serverFiles";
     private static int clientId = 1;
-    private String clientDirPrefix = "./common/src/main/resources/serverFiles";
     private Path clientDirectory;
-
+    private ByteBuffer buffer;
     private SocketChannel channel;
     private Selector selector;
-    private SelectionKey key;
-
 
     public NIOClientHandler(SocketChannel channel) {
         System.out.println("Client accepted");
         this.channel = channel;
+        this.buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE);
     }
 
     public void start() {
@@ -34,8 +34,8 @@ public class NIOClientHandler {
                 this.selector = Selector.open();
                 channel.configureBlocking(false);
                 channel.register(selector, SelectionKey.OP_READ);
-                channel.write(ByteBuffer.wrap(String.valueOf(clientId).getBytes()));
-                clientDirectory = Paths.get(clientDirPrefix + "/" + clientId);
+                sendMessageToClient(String.valueOf(clientId), channel);
+                clientDirectory = Paths.get(CLIENT_DIR_PREFIX + "/" + clientId);
                 if (!Files.exists(clientDirectory)) {
                     Files.createDirectory(clientDirectory);
                 }
@@ -44,81 +44,120 @@ public class NIOClientHandler {
             } catch (IOException e) {
                 clientId--;
                 e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }).start();
     }
 
-    private void runReadMessage() throws IOException {
+    private void runReadMessage() throws IOException, InterruptedException {
         while (true) {
             selector.select();
             Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
             while (iterator.hasNext()) {
-                key = iterator.next();
+                SelectionKey key = iterator.next();
                 iterator.remove();
                 if (key.isReadable()) {
-                    ByteBuffer buffer = ByteBuffer.allocate(1024);
-                    int count = ((SocketChannel) key.channel()).read(buffer);
-                    if (count == -1) {
+                    String message = readMessageFromClient(key);
+                    if ("end".equals(message)) {
                         key.channel().close();
                         break;
                     }
-                    buffer.flip();
-                    StringBuilder s = new StringBuilder();
-                    while (buffer.hasRemaining()) {
-                        s.append((char) buffer.get());
-                    }
-                    String[] data = s.toString().split(" ");
+                    String[] data = message.split(" ");
                     if ("./download".equals(data[0])) {
-                        sendFileToClient(data[1]);
+                        sendFileToClient(data[1], key);
                     } else if ("./upload".equals(data[0])) {
-                        getFileFromClient(data[1], Long.parseLong(data[2]));
+                        getFileFromClient(data[1], key);
                     }
                 }
             }
         }
     }
 
-    private void getFileFromClient(String fileName, Long fileSize) throws IOException {
-        System.out.println("Начало передачи файла от клиента " + fileName);
-        channel.write(ByteBuffer.wrap("OK".getBytes()));
-        ByteBuffer buffer = ByteBuffer.allocate(1024);
-        SocketChannel channel = (SocketChannel) key.channel();
-        RandomAccessFile file = new RandomAccessFile(clientDirectory + "/" + fileName, "rw");
-        FileChannel fileWriter = file.getChannel();
-        for (int i = 0; i < (fileSize / 1024) + 1; i++) {
-            channel.read(buffer);
-            buffer.flip();
-            while (buffer.hasRemaining()) {
-                fileWriter.write(buffer);
-            }
-            buffer.clear();
-        }
-        file.close();
-        System.out.println("Файл загружен на сервер " + fileName);
-
+    private void sendMessageToClient(String massage, SocketChannel channel) throws IOException {
+        byte[] byteMessage = massage.getBytes();
+        ByteBuffer messageLength = ByteBuffer.allocate(Integer.BYTES);
+        messageLength.putInt(byteMessage.length);
+        messageLength.flip();
+        channel.write(messageLength);
+        channel.write(ByteBuffer.wrap(byteMessage));
     }
 
-    private void sendFileToClient(String fileName) throws IOException {
+    private String readMessageFromClient(SelectionKey key) throws IOException, InterruptedException {
+        SocketChannel channel = (SocketChannel) key.channel();
+        StringBuilder message = new StringBuilder();
+        Thread.sleep(100);
+        ByteBuffer byteLength = ByteBuffer.allocate(Integer.BYTES);
+        int count = channel.read(byteLength);
+        if (count == -1) {
+            key.channel().close();
+            return "end";
+        }
+        byteLength.flip();
+        int messageLength = byteLength.getInt();
+        ByteBuffer byteMessage = ByteBuffer.allocate(messageLength);
+        channel.read(byteMessage);
+        byteMessage.flip();
+        while (byteMessage.hasRemaining()) {
+            message.append((char) byteMessage.get());
+        }
+        System.out.println("Сообщение от клиента: " + message);
+        return message.toString();
+    }
+
+    private void getFileFromClient(String fileName, SelectionKey key) throws IOException, InterruptedException {
+        System.out.println("Начало передачи файла от клиента " + fileName);
+        SocketChannel channel = (SocketChannel) key.channel();
+        sendMessageToClient("OK", channel);
+        ByteBuffer byteLength = ByteBuffer.allocate(Long.BYTES);
+        Thread.sleep(100);
+        channel.read(byteLength);
+        byteLength.flip();
+        long fileSize = byteLength.getLong();
+        int totalBytes = 0;
+        int readBytes;
+        try (RandomAccessFile file = new RandomAccessFile(clientDirectory + "/" + fileName, "rw")) {
+            FileChannel fileWriter = file.getChannel();
+            while (totalBytes < fileSize) {
+                readBytes = channel.read(buffer);
+                buffer.flip();
+                while (buffer.hasRemaining()) {
+                    fileWriter.write(buffer);
+                }
+                totalBytes += readBytes;
+                buffer.clear();
+            }
+            System.out.println("Файл загружен на сервер " + fileName);
+        }
+    }
+
+    private void sendFileToClient(String fileName, SelectionKey key) throws IOException {
         Path file = Paths.get(clientDirectory + "/" + fileName);
         SocketChannel channel = (SocketChannel) key.channel();
         if (Files.exists(file)) {
-            channel.write(ByteBuffer.wrap("OK".getBytes()));
-            long fileSize = Files.size(file);
-            channel.write(ByteBuffer.wrap(String.valueOf(fileSize).getBytes()));
-            channel.write(ByteBuffer.wrap(Files.readAllBytes(file)));
+            System.out.println("Начало отправки файла клиенту " + fileName);
+            sendMessageToClient("OK", channel);
+            long fileSizeLong = Files.size(file);
+            ByteBuffer fileSize = ByteBuffer.allocate(Long.BYTES);
+            fileSize.putLong(fileSizeLong);
+            fileSize.flip();
+            channel.write(fileSize);
+            try (RandomAccessFile accessFile = new RandomAccessFile(file.toFile(), "r")) {
+                FileChannel fileReader = accessFile.getChannel();
+                int readBytes = fileReader.read(buffer);
+                while (readBytes > -1) {
+                    buffer.flip();
+                    while (buffer.hasRemaining()) {
+                        channel.write(buffer);
+                    }
+                    buffer.clear();
+                    readBytes = fileReader.read(buffer);
+                }
+            }
+            System.out.println("Файл успешно отправлен клиенту");
+            buffer.clear();
         } else {
-            channel.write(ByteBuffer.wrap("NotOK".getBytes()));
+            sendMessageToClient("NotOK", channel);
         }
-    }
-
-    private String readMessageFromClient(SocketChannel channel) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(1024);
-        channel.read(buffer);
-        buffer.flip();
-        StringBuilder s = new StringBuilder();
-        while (buffer.hasRemaining()) {
-            s.append((char) buffer.get());
-        }
-        return s.toString();
     }
 }

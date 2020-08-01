@@ -10,12 +10,15 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
+
+    private static final int DEFAULT_BUFFER_SIZE = 1024;
     public TextField txt;
     public Button send;
     public ListView<String> lv;
     private Socket socket;
     private DataInputStream is;
     private DataOutputStream os;
+    private byte[] buffer;
     private String clientFilesPath = "./common/src/main/resources/clientFiles";
 
     @Override
@@ -24,13 +27,14 @@ public class Controller implements Initializable {
             socket = new Socket("localhost", 8189);
             is = new DataInputStream(socket.getInputStream());
             os = new DataOutputStream(socket.getOutputStream());
+            buffer = new byte[DEFAULT_BUFFER_SIZE];
             String clientId = readMessageFromServer();
             clientFilesPath = clientFilesPath + "/" + clientId;
             File folder = new File(clientFilesPath);
             if (!folder.exists()) {
                 folder.mkdirs();
             } else {
-                if (folder.list().length >=0) {
+                if (folder.list().length >= 0) {
                     for (String file : folder.list()) {
                         lv.getItems().add(file);
                     }
@@ -42,52 +46,35 @@ public class Controller implements Initializable {
     }
 
     public void sendCommand(ActionEvent actionEvent) {
-        String command = txt.getText();
+        String command = txt.getText().trim();
         String[] op = command.split(" ");
         try {
-            if (op[0].equals("./download")) {
-                os.write((op[0] + " " + op[1]).getBytes());
+            if ("./download".equals(op[0])) {
+                sendMessageToServer(command);
                 String response = readMessageFromServer();
-                System.out.println("Response " + response);
-                if (response.equals("OK")) {
+                if ("OK".equals(response)) {
+                    System.out.println("Начало загрузки файла с сервера " + op[1]);
                     File file = new File(clientFilesPath + "/" + op[1]);
                     if (!file.exists()) {
                         file.createNewFile();
                     }
-                    long len = Long.parseLong(readMessageFromServer());
-                    byte[] buffer = new byte[1024];
-                    try (FileOutputStream fos = new FileOutputStream(file)) {
-                        if (len < 1024) {
-                            int count = is.read(buffer);
-                            fos.write(buffer, 0, count);
-                        } else {
-                            for (int i = 0; i < (len / 1024) + 1; i++) {
-                                int count = is.read(buffer);
-                                fos.write(buffer, 0, count);
-                            }
-                        }
-                    }
+                    getFileFromServer(file);
                     lv.getItems().add(op[1]);
+                    System.out.println("Загрузка файла с сервера завершена");
                 } else {
                     System.out.println("Файл отсутствует на сервере");
                 }
-            } else if (op[0].equals("./upload")) {
+            } else if ("./upload".equals(op[0])) {
                 File file = new File(clientFilesPath + "/" + op[1]);
                 if (!file.exists()) {
                     System.out.println("Указан неверный файл");
                     return;
                 }
-                String fileSize = String.valueOf(file.length());
-                os.write((op[0] + " " + op[1] + " " + fileSize).getBytes());
+                sendMessageToServer(command);
                 String response = readMessageFromServer();
-                if (response.equals("OK")) {
-                    try (FileInputStream fileReader = new FileInputStream(file)) {
-                        byte[] buffer = new byte[1024];
-                        while (fileReader.available() > 0) {
-                            int count = fileReader.read(buffer);
-                            os.write(buffer, 0, count);
-                        }
-                    }
+                if ("OK".equals(response)) {
+                    System.out.println("Начало отправки файла на сервер " + op[1]);
+                    sendFileToServer(file);
                 }
                 System.out.println("Файл передан на сервер");
             } else {
@@ -98,10 +85,53 @@ public class Controller implements Initializable {
         }
     }
 
+    private void sendMessageToServer(String message) throws IOException {
+        byte[] byteMessage = message.getBytes();
+        os.writeInt(byteMessage.length);
+        os.write(byteMessage);
+    }
+
     private String readMessageFromServer() throws IOException {
-        byte[] buffer = new byte[1024];
-        int count = is.read(buffer);
-        String response = new String(buffer, 0, count);
+        int messageLength = is.readInt();
+        byte[] byteMessage = new byte[messageLength];
+        is.read(byteMessage,0, messageLength);
+        String response = new String(byteMessage);
+        System.out.println("Сообщение от сервера: " + response);
         return response;
+    }
+
+    private void getFileFromServer(File file) throws IOException {
+        long fileSize = is.readLong();
+        int totalBytes = 0;
+        int readBytes;
+        int lastBytes;
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            if (fileSize < buffer.length) {
+                is.read(buffer, 0, (int) fileSize);
+                fos.write(buffer, 0, (int) fileSize);
+            } else {
+                while (totalBytes < fileSize) {
+                    if ((lastBytes = (int) fileSize - totalBytes) < buffer.length) {
+                        is.read(buffer, 0, lastBytes);
+                        fos.write(buffer, 0, lastBytes);
+                        break;
+                    } else {
+                        readBytes = is.read(buffer);
+                        fos.write(buffer, 0, readBytes);
+                        totalBytes += readBytes;
+                    }
+                }
+            }
+        }
+    }
+
+    private void sendFileToServer(File file) throws IOException {
+        os.writeLong(file.length());
+        try (FileInputStream fileReader = new FileInputStream(file)) {
+            while (fileReader.available() > 0) {
+                int count = fileReader.read(buffer);
+                os.write(buffer, 0, count);
+            }
+        }
     }
 }
