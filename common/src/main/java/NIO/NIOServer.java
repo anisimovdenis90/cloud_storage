@@ -122,13 +122,13 @@ public class NIOServer implements Runnable {
         channel.read(fileSizeBuffer);
         fileSizeBuffer.flip();
         long fileSize = fileSizeBuffer.getLong();
-        int totalBytes = 0;
+        long totalBytes = 0;
         int lastBytes;
         int readBytes;
         try (RandomAccessFile file = new RandomAccessFile(clientDirectory + "/" + fileName, "rw")) {
             FileChannel fileWriter = file.getChannel();
             while (totalBytes < fileSize) {
-                if ((lastBytes = (int) fileSize - totalBytes) < DEFAULT_BUFFER_SIZE) {
+                if ((lastBytes = (int) (fileSize - totalBytes)) < DEFAULT_BUFFER_SIZE) {
                     ByteBuffer lastBytesBuffer = ByteBuffer.allocate(lastBytes);
                     channel.read(lastBytesBuffer);
                     lastBytesBuffer.flip();

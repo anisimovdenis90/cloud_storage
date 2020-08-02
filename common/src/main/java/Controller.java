@@ -102,7 +102,7 @@ public class Controller implements Initializable {
 
     private void getFileFromServer(File file) throws IOException {
         long fileSize = is.readLong();
-        int totalBytes = 0;
+        long totalBytes = 0;
         int readBytes;
         int lastBytes;
         try (FileOutputStream fos = new FileOutputStream(file)) {
@@ -111,7 +111,7 @@ public class Controller implements Initializable {
                 fos.write(buffer, 0, (int) fileSize);
             } else {
                 while (totalBytes < fileSize) {
-                    if ((lastBytes = (int) fileSize - totalBytes) < buffer.length) {
+                    if ((lastBytes = (int) (fileSize - totalBytes)) < buffer.length) {
                         is.read(buffer, 0, lastBytes);
                         fos.write(buffer, 0, lastBytes);
                         break;
