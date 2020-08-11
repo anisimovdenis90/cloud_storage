@@ -46,7 +46,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
         if (userId != null) {
             if (checkAlreadyLogin(userId)) {
                 command.setMessage("Клиент с таким логином уже авторизован");
-                ctx.fireChannelRead(command);
+                ctx.writeAndFlush(command);
                 return;
             }
             command.setAuthorized(true);

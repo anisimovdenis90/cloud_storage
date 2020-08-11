@@ -8,7 +8,7 @@ public class AuthService {
     private String dbUrl = "jdbc:mysql://localhost:3306/";
     private String dbUsername = "root";
     private String dbPassword = "gtr120519";
-    private String dbname = "cloud_users";
+    private String dbName = "cloud_users";
 
     private String timeZoneConfiguration = "?serverTimezone=Europe/Moscow&useSSL=false";
 
@@ -27,7 +27,7 @@ public class AuthService {
 
     private Connection getConnection() {
         try {
-            return DriverManager.getConnection(dbUrl + dbname + timeZoneConfiguration, dbUsername, dbPassword);
+            return DriverManager.getConnection(dbUrl + dbName + timeZoneConfiguration, dbUsername, dbPassword);
         } catch (SQLException e) {
             System.err.println("Ошибка подключения к базе данных!");
             e.printStackTrace();

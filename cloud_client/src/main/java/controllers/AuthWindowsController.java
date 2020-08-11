@@ -1,11 +1,10 @@
 package controllers;
 
 import commands.AuthCommand;
-import javafx.event.ActionEvent;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
@@ -16,9 +15,7 @@ import java.io.*;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class Controller implements Initializable {
-
-    private Scene authScene;
+public class AuthWindowsController implements Initializable {
 
     @FXML
     private TextField loginText;
@@ -27,7 +24,7 @@ public class Controller implements Initializable {
     private PasswordField passwordText;
 
     @FXML
-    private Button signupButton;
+    private Button signUpButton;
 
     @FXML
     private Button logInButton;
@@ -43,8 +40,10 @@ public class Controller implements Initializable {
     private void openMainWindow() {
         try {
             Scene mainScene = new Scene(FXMLLoader.load(getClass().getResource("/mainWindow.fxml")));
-            Stage window = (Stage) authScene.getWindow();
+            Stage window = (Stage) logInButton.getScene().getWindow();
+            window.setTitle("Cloud Drive");
             window.setScene(mainScene);
+            window.setOnCloseRequest(event -> NetworkClient.getInstance().stop());
             window.show();
         } catch (IOException e) {
             System.out.println("Ошибка загрузки главного экрана приложения");
@@ -53,8 +52,7 @@ public class Controller implements Initializable {
 
     }
 
-    public void startAuthentication(ActionEvent actionEvent) {
-        authScene = ((Node)actionEvent.getSource()).getScene();
+    public void startAuthentication() {
         String login = loginText.getText().trim();
         String password = passwordText.getText().trim();
         if (login.isEmpty() || password.isEmpty()) {
@@ -67,8 +65,8 @@ public class Controller implements Initializable {
         NetworkClient.getInstance().sendCommandToServer(new AuthCommand(login, password));
         AuthCommand command = (AuthCommand) NetworkClient.getInstance().readCommandFromServer();
         if (command.isAuthorized()) {
-            signInLabel.setText("Вход выполнен");
             signInLabel.setTextFill(Color.GREEN);
+            signInLabel.setText("Вход выполнен");
             NetworkClient.getInstance().setUserId(command.getUserID());
             NetworkClient.getInstance().createClientDir();
             openMainWindow();

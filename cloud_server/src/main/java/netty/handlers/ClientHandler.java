@@ -25,6 +25,10 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     private String userId;
     private String clientDirectory;
 
+    private FileOutputStream fileWriter;
+    private String processingFileName;
+    private int numberWriteParts = 0;
+
 
     public ClientHandler(AuthService authService, String nickName, String userId, String serverDir) {
         this.authService = authService;
@@ -58,7 +62,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         } else if (msg instanceof GetFilesListCommand) {
             sendFilesListToClient(ctx, (GetFilesListCommand) msg);
         } else {
-            System.out.println("Получен неизвестный объект от клиента " + userId);
+            System.out.println(String.format("Получен неизвестный объект %s от клиента %s", msg.toString(), userId));
         }
     }
 
@@ -88,16 +92,16 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    // НАДО ПЕРЕДЕЛАТЬ МЕТОД!!!
     private void getFileFromClient(FileMessageCommand command) {
-        try (FileOutputStream fileWriter = new FileOutputStream(clientDirectory + "/" + command.getFileName(), true)) {
-            fileWriter.write(command.getData());
-            fileWriter.close();
-            if (command.getPartNumber() == command.getPartsOfFile()) {
-                if (command.getFileSize() == Files.size(Paths.get(clientDirectory, command.getFileName())))
+        if (processingFileName == null) {
+            processingFileName = command.getFileName();
+            createFileWriter(processingFileName);
+        }
+        try {
+            writePartOfFileOnDisk(command.getData());
+            if (numberWriteParts == command.getPartsOfFile()) {
+                stopFileWriter();
                 System.out.println(String.format("Файл %s успешно загружен на сервер от клиента %s", command.getFileName(), userId));
-            } else {
-                System.out.println(String.format("Ошибка передачи файла %s от клиента %s, получены не все данные", command.getFileName(), userId));
             }
         } catch (IOException e) {
             System.out.println(String.format("Ошибка записи файла %s на сервер", command.getFileName()));
@@ -105,6 +109,26 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+    private void createFileWriter(String fileName) {
+        try {
+            fileWriter = new FileOutputStream(clientDirectory + "/" + processingFileName, true);
+        } catch (IOException e) {
+            System.out.println(String.format("Невозможно начать запись файла %s на диск", fileName));
+            e.printStackTrace();
+        }
+    }
+
+    private void writePartOfFileOnDisk(byte[] partOfFile) throws IOException {
+        fileWriter.write(partOfFile);
+        numberWriteParts++;
+    }
+
+    private void stopFileWriter() throws IOException {
+        fileWriter.close();
+        fileWriter = null;
+        processingFileName = null;
+        numberWriteParts = 0;
+    }
 
     private void sendFileToClient(ChannelHandlerContext ctx, FileRequestCommand command) {
         new Thread(() -> {

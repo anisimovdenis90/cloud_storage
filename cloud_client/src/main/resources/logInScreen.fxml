@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="800.0" style="-fx-background-color: #2d3447;" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.Controller">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="800.0" style="-fx-background-color: #2d3447;" xmlns="http://javafx.com/javafx/10.0.2-initial" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AuthWindowsController">
    <children>
       <AnchorPane fx:id="signinPane" layoutY="-1.0" prefHeight="500.0" prefWidth="800.0">
          <children>
@@ -30,7 +30,10 @@
                   <Font size="14.0" />
                </font>
             </PasswordField>
-            <Button fx:id="signupButton" layoutX="701.0" layoutY="30.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="68.0" style="-fx-background-color: #3c58fa;" text="Sign Up" textFill="#a0a2ab" />
+            <Button fx:id="signUpButton" layoutX="679.0" layoutY="30.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="90.0" style="-fx-background-color: #3c58fa;" text="Регистрация" textFill="#a0a2ab">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Button>
             <Label layoutX="350.0" layoutY="110.0" prefHeight="27.0" prefWidth="50.0" text="Cloud" textFill="#2196f3">
                <font>
                   <Font name="System Bold" size="18.0" />
@@ -52,7 +55,7 @@
                   <DropShadow />
                </effect>
             </Label>
-            <Label layoutX="589.0" layoutY="34.0" text="Not member ?" textFill="#a0a2ab">
+            <Label layoutX="574.0" layoutY="34.0" text="Нет аккаунта ?" textFill="#a0a2ab">
                <font>
                   <Font size="14.0" />
                </font>
@@ -62,7 +65,7 @@
                   <Image url="@lock.png" />
                </image>
             </ImageView>
-            <Button fx:id="logInButton" onAction="#startAuthentication" layoutX="356.0" layoutY="378.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="90.0" style="-fx-background-color: #2196f3;" text="Log In" textFill="WHITE">
+            <Button fx:id="logInButton" layoutX="356.0" layoutY="378.0" mnemonicParsing="false" onAction="#startAuthentication" prefHeight="36.0" prefWidth="90.0" style="-fx-background-color: #2196f3;" text="Войти" textFill="WHITE">
                <font>
                   <Font name="System Bold" size="14.0" />
                </font>

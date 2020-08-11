@@ -15,7 +15,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class MainController implements Initializable {
+public class MainWindowController implements Initializable {
 
     @FXML
     private ListView<String> clientFilesList;
@@ -31,6 +31,9 @@ public class MainController implements Initializable {
 
     @FXML
     private Button deleteButton;
+
+    @FXML
+    private Button renameButton;
 
     @FXML
     private ProgressBar progressBar;
@@ -83,6 +86,7 @@ public class MainController implements Initializable {
         }
         uploadButton.setDisable(true);
         downloadButton.setDisable(false);
+        renameButton.setDisable(false);
         deleteButton.setDisable(false);
     }
 
@@ -92,10 +96,12 @@ public class MainController implements Initializable {
         }
         downloadButton.setDisable(true);
         uploadButton.setDisable(false);
+        renameButton.setDisable(false);
         deleteButton.setDisable(false);
     }
 
     private void disableButtons() {
+        renameButton.setDisable(true);
         deleteButton.setDisable(true);
         downloadButton.setDisable(true);
         uploadButton.setDisable(true);
@@ -117,5 +123,8 @@ public class MainController implements Initializable {
 
     public void deleteButtonAction() {
 
+    }
+
+    public void renameButtonAction() {
     }
 }
