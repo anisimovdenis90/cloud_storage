@@ -45,7 +45,7 @@ public class AuthWindowsController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
+        NetworkClient.getInstance().start();
     }
 
     private void openMainWindow() {
@@ -61,6 +61,7 @@ public class AuthWindowsController implements Initializable {
             });
             Image image = new Image("img/network_drive.png");
             mainWindow.getIcons().add(image);
+            mainWindow.setResizable(false);
             logInButton.getScene().getWindow().hide();
             mainWindow.show();
         } catch (IOException e) {

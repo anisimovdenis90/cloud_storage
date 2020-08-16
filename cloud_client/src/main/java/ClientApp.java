@@ -19,7 +19,6 @@ public class ClientApp extends Application {
         Image image = new Image("img/network_drive.png");
         primaryStage.getIcons().add(image);
         primaryStage.setResizable(false);
-        NetworkClient.getInstance().start();
         primaryStage.setOnCloseRequest(event -> {
             NetworkClient.getInstance().stop();
             Platform.exit();
