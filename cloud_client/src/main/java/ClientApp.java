@@ -1,4 +1,5 @@
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -6,21 +7,23 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import services.NetworkClient;
 
-import java.io.InputStream;
-
 public class ClientApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("logInScreen.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("/fxml/logInScreen.fxml"));
         primaryStage.setTitle("Авторизация");
-        primaryStage.setScene(new Scene(root));
-
-        InputStream iconStream = getClass().getResourceAsStream("network_drive.png");
-        Image image = new Image(iconStream);
+        Scene scene = new Scene(root);
+        scene.getStylesheets().add((getClass().getResource("/css/action_style.css")).toExternalForm());
+        primaryStage.setScene(scene);
+        Image image = new Image("img/network_drive.png");
         primaryStage.getIcons().add(image);
         primaryStage.setResizable(false);
-        primaryStage.setOnCloseRequest(event -> NetworkClient.getInstance().stop());
+        NetworkClient.getInstance().start();
+        primaryStage.setOnCloseRequest(event -> {
+            NetworkClient.getInstance().stop();
+            Platform.exit();
+        });
         primaryStage.show();
     }
 

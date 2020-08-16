@@ -1,54 +1,23 @@
 package services;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class AuthService {
 
-    private String dbDriver = "com.mysql.cj.jdbc.Driver";
-    private String dbUrl = "jdbc:mysql://localhost:3306/";
-    private String dbUsername = "root";
-    private String dbPassword = "gtr120519";
-    private String dbName = "cloud_users";
+    DBConnector dbConnector;
 
-    private String timeZoneConfiguration = "?serverTimezone=Europe/Moscow&useSSL=false";
-
-    public void start() {
-        try {
-            Class.forName(dbDriver);
-            System.out.println("Сервер авторизации запущен");
-            resetIsLogin();
-//            netty.NetworkServer.getInfoLogger().info("Подключение к базе данных установлено");
-        } catch (ClassNotFoundException e) {
-            System.err.println("Ошибка загрузки драйвера базы данных!");
-            e.printStackTrace();
-//            netty.NetworkServer.getFatalLogger().fatal("Ошибка загрузки драйвера базы данных!", e);
-        }
-    }
-
-    private Connection getConnection() {
-        try {
-            return DriverManager.getConnection(dbUrl + dbName + timeZoneConfiguration, dbUsername, dbPassword);
-        } catch (SQLException e) {
-            System.err.println("Ошибка подключения к базе данных!");
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public void closeConnection(Connection connection) {
-        try {
-            if (connection != null) connection.close();
-        } catch (SQLException e) {
-            System.err.println("Ошибка закрытия соединения с базой данных");
-            e.printStackTrace();
-//            netty.NetworkServer.getFatalLogger().fatal("Ошибка закрытия соединения с базой данных", e);
-        }
+    public AuthService(DBConnector dbConnector) {
+        this.dbConnector = dbConnector;
+        resetIsLogin();
     }
 
     public synchronized String getUserIDByLoginAndPassword(String login, String password) {
         String userID = null;
         try {
-            Connection connection = getConnection();
+            Connection connection = dbConnector.getConnection();
             PreparedStatement statement = connection.prepareStatement(
                     "SELECT id FROM users WHERE login = ? AND password = ?"
             );
@@ -58,7 +27,7 @@ public class AuthService {
             if (resultSet.next()) {
                 userID = resultSet.getString("id");
             }
-            closeConnection(connection);
+            dbConnector.closeConnection(connection);
         } catch (SQLException e) {
             System.err.println("Ошибка получения данных из базы!");
             e.printStackTrace();
@@ -69,14 +38,14 @@ public class AuthService {
 
     public void setIsLogin(String id, boolean isLogin) {
         try {
-            Connection connection = getConnection();
+            Connection connection = dbConnector.getConnection();
             PreparedStatement statement = connection.prepareStatement(
                     "UPDATE users SET isLogin = ? WHERE id = ?"
             );
             statement.setInt(1, isLogin ? 1 : 0);
             statement.setString(2, id);
             statement.execute();
-            closeConnection(connection);
+            dbConnector.closeConnection(connection);
         } catch (SQLException e) {
             System.err.println("Ошибка изменения данных в базе!");
             e.printStackTrace();
@@ -85,7 +54,7 @@ public class AuthService {
 
     public boolean isLogin(String id) {
         try {
-            Connection connection = getConnection();
+            Connection connection = dbConnector.getConnection();
             PreparedStatement statement = connection.prepareStatement(
                     "SELECT login FROM users WHERE id = ? AND isLogin = 1"
             );
@@ -94,7 +63,7 @@ public class AuthService {
             if (resultSet.next()) {
                 return true;
             }
-            closeConnection(connection);
+            dbConnector.closeConnection(connection);
         } catch (SQLException e) {
             System.err.println("Ошибка получения данных из базы!");
             e.printStackTrace();
@@ -102,14 +71,50 @@ public class AuthService {
         return false;
     }
 
+    public boolean checkIsUsedUserId(String login) {
+        try {
+            Connection connection = dbConnector.getConnection();
+
+            PreparedStatement statement = connection.prepareStatement(
+                    "SELECT id FROM users WHERE login = ?"
+            );
+            statement.setString(1, login);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return false;
+            }
+            dbConnector.closeConnection(connection);
+        } catch (SQLException e) {
+            System.err.println("Ошибка получения данных из базы!");
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public void registerNewUser(String login, String password) {
+        try {
+            Connection connection = dbConnector.getConnection();
+            PreparedStatement statement = connection.prepareStatement(
+                    "INSERT INTO users (login, password) VALUES (?, ?)"
+            );
+            statement.setString(1, login);
+            statement.setString(2, password);
+            statement.execute();
+            dbConnector.closeConnection(connection);
+        } catch (SQLException e) {
+            System.err.println("Ошибка изменения данных в базе!");
+            e.printStackTrace();
+        }
+    }
+
     private void resetIsLogin() {
         try {
-            Connection connection = getConnection();
+            Connection connection = dbConnector.getConnection();
             PreparedStatement statement = connection.prepareStatement(
                     "UPDATE users SET isLogin = 0"
             );
             statement.execute();
-            closeConnection(connection);
+            dbConnector.closeConnection(connection);
         } catch (SQLException e) {
             System.err.println("Ошибка изменения данных в базе!");
             e.printStackTrace();

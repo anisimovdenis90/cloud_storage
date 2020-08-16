@@ -6,13 +6,13 @@ public class FileRequestCommand implements Serializable {
 
     private static final long serialVersionUID = 1l;
 
-    private final String fileName;
+    private final String fileToDownload;
 
     public FileRequestCommand(String fileName) {
-        this.fileName = fileName;
+        this.fileToDownload = fileName;
     }
 
-    public String getFileName() {
-        return fileName;
+    public String getFileToDownload() {
+        return fileToDownload;
     }
 }

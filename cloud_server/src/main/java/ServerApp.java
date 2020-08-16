@@ -5,7 +5,7 @@ public class ServerApp {
     private static final int DEFAULT_PORT = 8189;
 //    private static final Logger logger = Logger.getLogger(netty.NetworkServer.class);
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         int port = getServerPort(args);
         new NetworkServer(port).run();
     }

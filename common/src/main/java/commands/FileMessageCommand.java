@@ -1,15 +1,13 @@
 package commands;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class FileMessageCommand implements Serializable {
 
     private static final long serialVersionUID = 1l;
 
     private final String fileName;
+    private final String destPath;
     private final long fileSize;
     private final int partsOfFile;
 
@@ -17,8 +15,9 @@ public class FileMessageCommand implements Serializable {
     private byte[] data;
 
 
-    public FileMessageCommand(String fileName, long fileSize, int partsOfFile, int partNumber, byte[] data) {
+    public FileMessageCommand(String fileName, String destPath, long fileSize, int partsOfFile, int partNumber, byte[] data) {
         this.fileName = fileName;
+        this.destPath = destPath;
         this.fileSize = fileSize;
         this.partsOfFile = partsOfFile;
         this.partNumber = partNumber;
@@ -27,6 +26,10 @@ public class FileMessageCommand implements Serializable {
 
     public String getFileName() {
         return fileName;
+    }
+
+    public String getDestPath() {
+        return destPath;
     }
 
     public long getFileSize() {
