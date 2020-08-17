@@ -7,7 +7,7 @@ import java.sql.SQLException;
 
 public class AuthService {
 
-    DBConnector dbConnector;
+    private DBConnector dbConnector;
 
     public AuthService(DBConnector dbConnector) {
         this.dbConnector = dbConnector;
@@ -31,7 +31,6 @@ public class AuthService {
         } catch (SQLException e) {
             System.err.println("Ошибка получения данных из базы!");
             e.printStackTrace();
-//            netty.NetworkServer.getFatalLogger().fatal("Ошибка получения данных из базы!", e);
         }
         return userID;
     }

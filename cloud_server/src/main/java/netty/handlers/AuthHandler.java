@@ -10,7 +10,6 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
 
     private final String serverDir;
     private static boolean authOk = false;
-//    private AuthService authService;
     private AuthService authService;
     private String userId;
 

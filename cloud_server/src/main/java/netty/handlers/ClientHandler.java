@@ -20,7 +20,6 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     private static final String CLIENT_DIR_PREFIX = "client";
     private static final int DEFAULT_BUFFER_SIZE = 1024 * 1024 * 10;
     private final String serverDir;
-//    private final AuthService authService;
     private final AuthService authService;
     private String userId;
     private String rootClientDirectory;
@@ -37,21 +36,6 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         rootClientDirectory = serverDir + "/" + clientDir;
         createClientDirectory();
     }
-
-//    @Override
-//    public void channelActive(ChannelHandlerContext ctx) {
-//        try {
-//            Path path = Paths.get(rootClientDirectory);
-//            Path clientPath = Paths.get(clientDir);
-//            FilesListCommand filesList = new FilesListCommand(Files.list(path).map(FileInfo::new).collect(Collectors.toList()), clientPath);
-//            System.out.println("Задается руут");
-//            filesList.setRootServerPath(clientPath);
-//            ctx.writeAndFlush(filesList);
-//        } catch (IOException e) {
-//            System.out.printf("Ошибка получения списка файлов клиента %s%n", userId);
-//            e.printStackTrace();
-//        }
-//    }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
