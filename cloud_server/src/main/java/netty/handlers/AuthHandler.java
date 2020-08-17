@@ -1,6 +1,7 @@
 package netty.handlers;
 
 import commands.AuthCommand;
+import commands.SignUpCommand;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import services.AuthService;
@@ -9,8 +10,8 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
 
     private final String serverDir;
     private static boolean authOk = false;
+//    private AuthService authService;
     private AuthService authService;
-    private String nickName;
     private String userId;
 
     public AuthHandler(AuthService authService, String serverDir) {
@@ -34,9 +35,23 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         if (msg instanceof AuthCommand) {
             authProcessing(ctx, (AuthCommand) msg);
+        } else if (msg instanceof SignUpCommand){
+           signUpProcessing(ctx, (SignUpCommand) msg);
         } else {
             ctx.fireChannelRead(msg);
         }
+    }
+
+    private void signUpProcessing(ChannelHandlerContext ctx, SignUpCommand command) {
+        String login = command.getLogin();
+        if (authService.checkIsUsedUserId(login)) {
+            String password = command.getPassword();
+            authService.registerNewUser(login, password);
+            command.setSignUp(true);
+        } else {
+            command.setMessage("Указанный логин уже используется");
+        }
+        ctx.writeAndFlush(command);
     }
 
     private void authProcessing(ChannelHandlerContext ctx, AuthCommand command) {
@@ -52,7 +67,8 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
             command.setAuthorized(true);
             command.setUserID(userId);
             authService.setIsLogin(userId, true);
-            ctx.pipeline().addLast(new ClientHandler(authService, nickName, userId, serverDir));
+            ctx.pipeline().addLast(new ClientHandler(authService, userId, serverDir));
+            System.out.println("Добавлен обработчик для нового клиента");
         } else {
             command.setMessage("Неверный логин или пароль");
         }
