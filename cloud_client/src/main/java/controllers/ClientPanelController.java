@@ -34,8 +34,14 @@ public class ClientPanelController extends PanelController {
         try {
             pathField.setText(path.normalize().toAbsolutePath().toString());
             table.getItems().clear();
-            table.getItems().addAll(Files.list(path).map(FileInfo::new).collect(Collectors.toList()));
-            table.sort();
+            table.getItems().addAll(Files.list(path).filter(p -> {
+                try {
+                    return !Files.isHidden(p);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return false;
+            }).map(FileInfo::new).collect(Collectors.toList()));
         } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.WARNING, "Не удалось обновить список файлов", ButtonType.OK);
             alert.showAndWait();

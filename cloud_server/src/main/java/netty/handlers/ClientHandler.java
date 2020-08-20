@@ -52,6 +52,8 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             getFileFromClient((FileMessageCommand) msg);
         } else if (msg instanceof DeleteFileCommand) {
             deleteFile(ctx, (DeleteFileCommand) msg);
+        } else if (msg instanceof RenameFileCommand) {
+            renameFile(ctx, (RenameFileCommand) msg);
         } else if (msg instanceof GetFilesListCommand) {
             sendFilesListToClient(ctx, (GetFilesListCommand) msg);
         } else {
@@ -102,6 +104,22 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         } catch (IOException e) {
             System.out.println("Ошибка удаления файла с сервера " + command.getFileName());
             ctx.writeAndFlush(new ErrorCommand("Невозможно удалить файл с сервера, попробуйте повторить позже."));
+            e.printStackTrace();
+        }
+    }
+
+    private void renameFile(ChannelHandlerContext ctx, RenameFileCommand command) {
+        System.out.printf("Команда на переименование файла %s на %s от клиента %s%n", command.getOldFileName(), command.getNewFileName(), userId);
+        try {
+            Path oldFile = Paths.get(serverDir, command.getOldFileName());
+            Path newFile = Paths.get(serverDir, command.getNewFileName());
+            Files.move(oldFile, newFile);
+            String message = "Файл " + oldFile.getFileName() + " успешно переименован на " + newFile.getFileName();
+            ctx.writeAndFlush(new MessageCommand(message));
+            System.out.println(message);
+        } catch (IOException e) {
+            System.out.println("Ошибка переименования файла на сервере " + command.getOldFileName());
+            ctx.writeAndFlush(new ErrorCommand("Невозможно переименовать файл на сервере, попробуйте повторить позже."));
             e.printStackTrace();
         }
     }

@@ -1,6 +1,8 @@
 package util;
 
+import java.nio.file.Path;
+
 public interface FinishedCallBack {
 
-    void call(String mes1, String mes2);
+    void call(Path dir);
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
@@ -9,79 +10,152 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
 <AnchorPane fx:id="signUpPane" layoutY="-1.0" prefHeight="500.0" prefWidth="800.0" style="-fx-background-color: #2d3447;" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AuthWindowsController">
    <children>
-      <ImageView fitHeight="50.0" fitWidth="36.0" layoutX="220.0" layoutY="190.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@../img/contact.png" />
-         </image>
-      </ImageView>
-      <TextField fx:id="loginText" layoutX="276.0" layoutY="195.0" prefHeight="39.0" prefWidth="255.0" promptText="Введите логин" style="-fx-background-color: transparent; -fx-border-width: 0px 0px 2px 0px; -fx-border-color: #a0a2ab; -fx-text-fill: #a0a2ab;">
-         <font>
-            <Font size="14.0" />
-         </font>
-      </TextField>
-      <PasswordField id="passwordText" fx:id="passwordText" layoutX="276.0" layoutY="333.0" prefHeight="39.0" prefWidth="255.0" promptText="Введите пароль" style="-fx-background-color: transparent; -fx-border-width: 0px 0px 2px 0px; -fx-border-color: #a0a2ab; -fx-text-fill: #a0a2ab;">
-         <font>
-            <Font size="14.0" />
-         </font>
-      </PasswordField>
-      <Button fx:id="signInScreenButton" onAction="#openSignInScreen" layoutX="679.0" layoutY="30.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="90.0" style="-fx-background-color: #3c58fa;" text="Войти" textFill="#a0a2ab">
-         <font>
-            <Font name="System Bold" size="12.0" />
-         </font></Button>
-      <Label layoutX="350.0" layoutY="102.0" prefHeight="27.0" prefWidth="50.0" text="Cloud" textFill="#2196f3">
-         <font>
-            <Font name="System Bold" size="18.0" />
-         </font>
-         <effect>
-            <Bloom />
-         </effect>
-      </Label>
-      <ImageView fitHeight="78.0" fitWidth="95.0" layoutX="361.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@../img/network_drive.png" />
-         </image>
-      </ImageView>
-      <Label layoutX="400.0" layoutY="102.0" prefHeight="27.0" prefWidth="50.0" text="Drive" textFill="#a0a2ab">
-         <font>
-            <Font name="System Bold" size="18.0" />
-         </font>
-         <effect>
-            <DropShadow />
-         </effect>
-      </Label>
-      <Label layoutX="574.0" layoutY="34.0" text="Есть аккаунт ?" textFill="#a0a2ab">
-         <font>
-            <Font size="14.0" />
-         </font>
-      </Label>
-      <ImageView fitHeight="39.0" fitWidth="36.0" layoutX="220.0" layoutY="325.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@../img/lock.png" />
-         </image>
-      </ImageView>
-      <Button fx:id="signUpButton" onAction="#startSignUp" layoutX="318.0" layoutY="411.0" mnemonicParsing="false" prefHeight="36.0" prefWidth="164.0" style="-fx-background-color: #2196f3;" text="Зарегестрироваться" textFill="WHITE">
-         <font>
-            <Font name="System Bold" size="14.0" />
-         </font>
-      </Button>
-      <Label fx:id="signInLabel" alignment="CENTER" layoutX="124.0" layoutY="154.0" prefHeight="27.0" prefWidth="560.0" text="" textFill="#ff0101">
-         <font>
-            <Font name="System Italic" size="16.0" />
-         </font>
-      </Label>
-      <ImageView fitHeight="50.0" fitWidth="36.0" layoutX="220.0" layoutY="258.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@../img/email.png" />
-         </image>
-      </ImageView>
-      <TextField fx:id="emailText" layoutX="276.0" layoutY="263.0" prefHeight="39.0" prefWidth="255.0" promptText="Введите почту" style="-fx-background-color: transparent; -fx-border-width: 0px 0px 2px 0px; -fx-border-color: #a0a2ab; -fx-text-fill: #a0a2ab;">
-         <font>
-            <Font size="14.0" />
-         </font>
-      </TextField>
+      <VBox alignment="TOP_CENTER" layoutX="337.0" prefHeight="117.0" prefWidth="127.0">
+         <children>
+            <ImageView fitHeight="78.0" fitWidth="95.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/network_drive.png" />
+               </image>
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin>
+            </ImageView>
+            <HBox alignment="CENTER" prefHeight="40.0" prefWidth="104.0">
+               <children>
+                  <Label prefHeight="27.0" prefWidth="50.0" text="Cloud" textFill="#2196f3">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                     <effect>
+                        <Bloom />
+                     </effect>
+                  </Label>
+                  <Label prefHeight="27.0" prefWidth="50.0" text="Drive" textFill="#a0a2ab">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                     <effect>
+                        <DropShadow />
+                     </effect>
+                  </Label>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+      <HBox alignment="CENTER_RIGHT" layoutX="561.0" prefHeight="46.0" prefWidth="239.0">
+         <children>
+            <Label text="Есть аккаунт ?" textFill="#a0a2ab">
+               <font>
+                  <Font size="14.0" />
+               </font>
+               <HBox.margin>
+                  <Insets right="20.0" top="20.0" />
+               </HBox.margin>
+            </Label>
+            <Button fx:id="signInScreenButton" mnemonicParsing="false" onAction="#openSignInScreen" prefHeight="27.0" prefWidth="90.0" style="-fx-background-color: #3c58fa;" text="Войти" textFill="#a0a2ab">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+               <HBox.margin>
+                  <Insets right="20.0" top="20.0" />
+               </HBox.margin>
+            </Button>
+         </children>
+      </HBox>
+      <VBox alignment="TOP_CENTER" layoutX="66.0" layoutY="117.0" prefHeight="388.0" prefWidth="676.0">
+         <children>
+            <Label fx:id="signInLabel" alignment="CENTER" prefHeight="27.0" prefWidth="560.0" text="" textFill="#ff0101">
+               <font>
+                  <Font name="System Italic" size="16.0" />
+               </font>
+               <VBox.margin>
+                  <Insets top="30.0" />
+               </VBox.margin>
+            </Label>
+            <HBox alignment="TOP_CENTER" prefHeight="48.0" prefWidth="200.0">
+               <children>
+                  <ImageView fitHeight="50.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/contact.png" />
+                     </image>
+                     <HBox.margin>
+                        <Insets right="20.0" />
+                     </HBox.margin>
+                  </ImageView>
+                  <TextField fx:id="loginText" prefHeight="39.0" prefWidth="255.0" promptText="Введите логин" style="-fx-background-color: transparent; -fx-border-width: 0px 0px 2px 0px; -fx-border-color: #a0a2ab; -fx-text-fill: #a0a2ab;">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets right="60.0" />
+                     </HBox.margin>
+                  </TextField>
+               </children>
+               <VBox.margin>
+                  <Insets top="15.0" />
+               </VBox.margin>
+            </HBox>
+            <HBox alignment="TOP_CENTER" prefHeight="48.0" prefWidth="200.0">
+               <children>
+                  <ImageView fitHeight="39.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/lock.png" />
+                     </image>
+                     <HBox.margin>
+                        <Insets right="20.0" />
+                     </HBox.margin>
+                  </ImageView>
+                  <PasswordField id="passwordText" fx:id="passwordText" prefHeight="39.0" prefWidth="255.0" promptText="Введите пароль" style="-fx-background-color: transparent; -fx-border-width: 0px 0px 2px 0px; -fx-border-color: #a0a2ab; -fx-text-fill: #a0a2ab;">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets right="60.0" />
+                     </HBox.margin>
+                  </PasswordField>
+               </children>
+               <VBox.margin>
+                  <Insets top="20.0" />
+               </VBox.margin>
+            </HBox>
+            <HBox alignment="TOP_CENTER" prefHeight="48.0" prefWidth="200.0">
+               <children>
+                  <ImageView fitHeight="39.0" fitWidth="36.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../img/lock.png" />
+                     </image>
+                     <HBox.margin>
+                        <Insets right="20.0" />
+                     </HBox.margin>
+                  </ImageView>
+                  <PasswordField id="passwordText" fx:id="passwordTextRepeat" prefHeight="39.0" prefWidth="255.0" promptText="Введите пароль" style="-fx-background-color: transparent; -fx-border-width: 0px 0px 2px 0px; -fx-border-color: #a0a2ab; -fx-text-fill: #a0a2ab;">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets right="60.0" />
+                     </HBox.margin>
+                  </PasswordField>
+               </children>
+               <VBox.margin>
+                  <Insets top="20.0" />
+               </VBox.margin>
+            </HBox>
+            <Button fx:id="signUpButton" mnemonicParsing="false" onAction="#startRegistration" prefHeight="36.0" prefWidth="164.0" style="-fx-background-color: #2196f3;" text="Зарегестрироваться" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+               <VBox.margin>
+                  <Insets top="30.0" />
+               </VBox.margin>
+            </Button>
+         </children>
+      </VBox>
    </children>
 </AnchorPane>

@@ -5,7 +5,7 @@ import java.nio.file.Path;
 
 public class GetFilesListCommand implements Serializable {
 
-    private static final long serialVersionUID = 1l;
+    private static final long serialVersionUID = 1L;
 
     private String currentPath;
 

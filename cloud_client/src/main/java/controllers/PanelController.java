@@ -79,16 +79,21 @@ public abstract class PanelController {
     }
 
     public String getSelectedFileName() {
-        if (!table.isFocused()) {
-            return null;
+        if (checkSelectedItem()) {
+            return table.getSelectionModel().getSelectedItem().getFileName();
         }
-        if (table.getSelectionModel() == null) {
-            return null;
+        return null;
+    }
+
+    private boolean checkSelectedItem() {
+        return table.isFocused() && table.getSelectionModel() != null && table.getSelectionModel().getSelectedItem() != null;
+    }
+
+    public Object getSelectedItem() {
+        if (checkSelectedItem()) {
+            return table.getSelectionModel().getSelectedItem();
         }
-        if (table.getSelectionModel().getSelectedItem() == null) {
-            return null;
-        }
-        return table.getSelectionModel().getSelectedItem().getFileName();
+        return null;
     }
 
     private String calculateSize(Long fileSize) {

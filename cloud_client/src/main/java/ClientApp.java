@@ -1,3 +1,4 @@
+import controllers.AuthWindowsController;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -10,14 +11,16 @@ import services.NetworkClient;
 public class ClientApp extends Application {
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("/fxml/logInScreen.fxml"));
-        primaryStage.setTitle("Авторизация");
+    public void start(Stage primaryStage) throws Exception {
+        Image icon = new Image("img/network_drive.png");
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/logInScreen.fxml"));
+        Parent root = fxmlLoader.load();
+        NetworkClient.getInstance().start();
         Scene scene = new Scene(root);
-        scene.getStylesheets().add((getClass().getResource("/css/action_style.css")).toExternalForm());
+        scene.getStylesheets().add((getClass().getResource("/css/style.css")).toExternalForm());
+        primaryStage.setTitle("Авторизация");
         primaryStage.setScene(scene);
-        Image image = new Image("img/network_drive.png");
-        primaryStage.getIcons().add(image);
+        primaryStage.getIcons().add(icon);
         primaryStage.setResizable(false);
         primaryStage.setOnCloseRequest(event -> {
             NetworkClient.getInstance().stop();

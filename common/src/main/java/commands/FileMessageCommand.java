@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class FileMessageCommand implements Serializable {
 
-    private static final long serialVersionUID = 1l;
+    private static final long serialVersionUID = 1L;
 
     private final String fileName;
     private final String destPath;

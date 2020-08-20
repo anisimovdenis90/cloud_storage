@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class DeleteFileCommand implements Serializable {
 
-    private static final long serialVersionUID = 1l;
+    private static final long serialVersionUID = 1L;
 
     private final String fileName;
 

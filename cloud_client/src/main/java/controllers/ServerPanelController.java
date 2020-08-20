@@ -69,14 +69,4 @@ public class ServerPanelController extends PanelController {
             }
         });
     }
-
-    public FileInfo getSelectedItem() {
-        if (!table.isFocused()) {
-            return null;
-        }
-        if (table.getSelectionModel() == null) {
-            return null;
-        }
-        return table.getSelectionModel().getSelectedItem();
-    }
 }

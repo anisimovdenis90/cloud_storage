@@ -1,5 +1,8 @@
 package services;
 
+import commands.RenameFileCommand;
+import controllers.AuthWindowsController;
+import util.TransferItem;
 import util.FinishedCallBack;
 import commands.DeleteFileCommand;
 import commands.FileMessageCommand;
@@ -7,7 +10,6 @@ import commands.FileRequestCommand;
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
 import javafx.application.Platform;
-import javafx.scene.control.ProgressBar;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -28,6 +30,8 @@ public class NetworkClient {
 
     private static ObjectEncoderOutputStream out;
     private static ObjectDecoderInputStream in;
+
+    private volatile boolean connectionSuccess = false;
 
     public static NetworkClient getInstance() {
         if (instance == null) {
@@ -53,8 +57,10 @@ public class NetworkClient {
             socket = new Socket(DEFAULT_SERVER_ADDRESS, DEFAULT_PORT);
             out = new ObjectEncoderOutputStream(socket.getOutputStream());
             in = new ObjectDecoderInputStream(socket.getInputStream(), 1024 * 1024 * 100);
+            connectionSuccess = true;
             System.out.println("Соединение с сервером установленно");
         } catch (IOException e) {
+            System.out.println("Ошибка связи с сервером.");
             e.printStackTrace();
         }
     }
@@ -78,7 +84,7 @@ public class NetworkClient {
         }
     }
 
-    public void getFileFromServer(Path sourcePath, Path destPath, ProgressBar progressBar, FinishedCallBack callBack) {
+    public void getFileFromServer(Path sourcePath, Path destPath, TransferItem item, FinishedCallBack callBack) {
         sendCommandToServer(new FileRequestCommand(sourcePath.toString()));
         new Thread(() -> {
             try {
@@ -88,25 +94,24 @@ public class NetworkClient {
                     final int totalPartsProgress = command.getPartsOfFile();
                     final int actualPart = command.getPartNumber();
                     fileWriter.write(command.getData());
-                    Platform.runLater(() -> progressBar.setProgress((double) actualPart / totalPartsProgress));
+                    Platform.runLater(() -> item.setProgressIndicator((double) actualPart / totalPartsProgress));
                     if (command.getPartNumber() == command.getPartsOfFile()) {
                         break;
                     }
                 }
                 System.out.printf("Файл %s успешно скачен с сервера%n", sourcePath);
                 fileWriter.close();
-                callBack.call(sourcePath.getFileName().toString(), destPath.toString());
-            } catch (ClassNotFoundException e) {
-                System.out.println("Получена неверная команда от сервера");
-                e.printStackTrace();
-            } catch (IOException e) {
+                item.setSuccess(true);
+                callBack.call(destPath);
+            } catch (IOException | ClassNotFoundException e) {
+                item.setSuccess(false);
                 System.out.printf("Ошибка скачивания файла %s с сервера%n", sourcePath);
                 e.printStackTrace();
             }
         }).start();
     }
 
-    public void sendFileToServer(Path sourcePath, Path destPath, ProgressBar progressBar, FinishedCallBack callBack) {
+    public void sendFileToServer(Path sourcePath, Path destPath, TransferItem item, FinishedCallBack callBack) {
         new Thread(() -> {
             final long fileSize = sourcePath.toFile().length();
             int partsOfFile = (int) fileSize / DEFAULT_BUFFER_SIZE;
@@ -134,12 +139,14 @@ public class NetworkClient {
                     out.writeObject(fileToServerCommand);
                     partsSend++;
                     final int actualPart = partsSend;
-                    Platform.runLater(() -> progressBar.setProgress((double) actualPart / totalPartsProgress));
+                    Platform.runLater(() -> item.setProgressIndicator((double) actualPart / totalPartsProgress));
                 }
                 System.out.printf("Файл %s успешно отправлен на сервер%n", sourcePath);
-                callBack.call(sourcePath.getFileName().toString(), destPath.toString());
+                item.setSuccess(true);
+                callBack.call(destPath);
             } catch (IOException e) {
-                System.out.println(String.format("Ошибка отправки файла %s на сервер", sourcePath));
+                item.setSuccess(false);
+                System.out.printf("Ошибка отправки файла %s на сервер%n", sourcePath);
                 e.printStackTrace();
             }
         }) .start();
@@ -147,6 +154,10 @@ public class NetworkClient {
 
     public void deleteFileFromServer(Path fileName) {
         sendCommandToServer(new DeleteFileCommand(fileName.toString()));
+    }
+
+    public void renameFileOnServer(String oldFileName, String newFileName) {
+        sendCommandToServer(new RenameFileCommand(oldFileName, newFileName));
     }
 
     public Object readCommandFromServer() {
