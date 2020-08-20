@@ -8,9 +8,9 @@ import services.AuthService;
 
 public class AuthHandler extends ChannelInboundHandlerAdapter {
 
+    private static final boolean authOk = false;
     private final String serverDir;
-    private static boolean authOk = false;
-    private AuthService authService;
+    private final AuthService authService;
     private String userId;
 
     public AuthHandler(AuthService authService, String serverDir) {
@@ -20,12 +20,12 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        System.out.println(String.format("Клиент подключился по адресу %s", ctx.channel().remoteAddress().toString()));
+        System.out.printf("Клиент подключился по адресу %s%n", ctx.channel().remoteAddress().toString());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        System.out.println(String.format("Клиент отключился по адресу %s", ctx.channel().remoteAddress().toString()));
+        System.out.printf("Клиент отключился по адресу %s%n", ctx.channel().remoteAddress().toString());
         authService.setIsLogin(userId, false);
         ctx.close();
     }
@@ -34,8 +34,8 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         if (msg instanceof AuthCommand) {
             authProcessing(ctx, (AuthCommand) msg);
-        } else if (msg instanceof SignUpCommand){
-           signUpProcessing(ctx, (SignUpCommand) msg);
+        } else if (msg instanceof SignUpCommand) {
+            signUpProcessing(ctx, (SignUpCommand) msg);
         } else {
             ctx.fireChannelRead(msg);
         }

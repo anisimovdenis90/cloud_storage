@@ -40,7 +40,7 @@ public class ServerPanelController extends PanelController {
         if (receivedCommand instanceof FilesListCommand) {
             System.out.println("Получены файлы");
             FilesListCommand command = (FilesListCommand) receivedCommand;
-            pathField.setText(command.getCurrentServerPath().toString());
+            pathField.setText(command.getCurrentServerPath());
             table.getItems().clear();
             table.getItems().addAll(command.getFilesList());
             table.sort();

@@ -1,4 +1,3 @@
-import controllers.AuthWindowsController;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -9,6 +8,10 @@ import javafx.stage.Stage;
 import services.NetworkClient;
 
 public class ClientApp extends Application {
+
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -27,9 +30,5 @@ public class ClientApp extends Application {
             Platform.exit();
         });
         primaryStage.show();
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }

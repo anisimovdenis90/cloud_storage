@@ -17,14 +17,6 @@ public class SignUpCommand implements Serializable {
         this.password = password;
     }
 
-    public void setSignUp(boolean signUp) {
-        isSignUp = signUp;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
     public String getLogin() {
         return login;
     }
@@ -37,7 +29,15 @@ public class SignUpCommand implements Serializable {
         return isSignUp;
     }
 
+    public void setSignUp(boolean signUp) {
+        isSignUp = signUp;
+    }
+
     public String getMessage() {
         return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

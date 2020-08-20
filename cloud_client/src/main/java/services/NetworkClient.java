@@ -1,15 +1,14 @@
 package services;
 
-import commands.RenameFileCommand;
-import controllers.AuthWindowsController;
-import util.TransferItem;
-import util.FinishedCallBack;
 import commands.DeleteFileCommand;
 import commands.FileMessageCommand;
 import commands.FileRequestCommand;
+import commands.RenameFileCommand;
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
 import javafx.application.Platform;
+import util.FinishedCallBack;
+import util.TransferItem;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -25,13 +24,15 @@ public class NetworkClient {
     private static final int DEFAULT_BUFFER_SIZE = 1024 * 1024 * 10;
 
     private static NetworkClient instance;
-    private Socket socket;
-    private String userId;
-
     private static ObjectEncoderOutputStream out;
     private static ObjectDecoderInputStream in;
-
+    private Socket socket;
+    private String userId;
     private volatile boolean connectionSuccess = false;
+
+    private NetworkClient() {
+
+    }
 
     public static NetworkClient getInstance() {
         if (instance == null) {
@@ -40,16 +41,12 @@ public class NetworkClient {
         return instance;
     }
 
-    private NetworkClient() {
-
+    public String getUserId() {
+        return userId;
     }
 
     public void setUserId(String newUserId) {
         userId = newUserId;
-    }
-
-    public String getUserId() {
-        return userId;
     }
 
     public void start() {
@@ -149,7 +146,7 @@ public class NetworkClient {
                 System.out.printf("Ошибка отправки файла %s на сервер%n", sourcePath);
                 e.printStackTrace();
             }
-        }) .start();
+        }).start();
     }
 
     public void deleteFileFromServer(Path fileName) {

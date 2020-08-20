@@ -6,13 +6,13 @@ import java.sql.SQLException;
 
 public class MySQLDBConnector implements DBConnector {
 
-    private String dbDriver = "com.mysql.cj.jdbc.Driver";
-    private String dbUrl = "jdbc:mysql://localhost:3306/";
-    private String dbUsername = "root";
-    private String dbPassword = "gtr120519";
-    private String dbName = "cloud_users";
+    private final String dbDriver = "com.mysql.cj.jdbc.Driver";
+    private final String dbUrl = "jdbc:mysql://localhost:3306/";
+    private final String dbUsername = "root";
+    private final String dbPassword = "gtr120519";
+    private final String dbName = "cloud_users";
 
-    private String timeZoneConfiguration = "?serverTimezone=Europe/Moscow&useSSL=false";
+    private final String timeZoneConfiguration = "?serverTimezone=Europe/Moscow&useSSL=false";
 
     public void start() {
         try {

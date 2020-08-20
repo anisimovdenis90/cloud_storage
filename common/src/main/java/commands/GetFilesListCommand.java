@@ -7,7 +7,7 @@ public class GetFilesListCommand implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String currentPath;
+    private final String currentPath;
 
     public GetFilesListCommand(Path currentDir) {
         if (currentDir == null) {

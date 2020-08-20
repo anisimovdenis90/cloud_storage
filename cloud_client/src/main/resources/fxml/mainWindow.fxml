@@ -27,7 +27,7 @@
          <center>
             <VBox prefHeight="433.0" prefWidth="1200.0" BorderPane.alignment="CENTER">
                <children>
-                  <SplitPane dividerPositions="0.6066725197541704" minHeight="200.0" minWidth="300.0" prefHeight="585.0" prefWidth="1160.0" VBox.vgrow="ALWAYS">
+                  <SplitPane dividerPositions="0.6066725197541704" minHeight="200.0" minWidth="300.0" prefHeight="470.0" prefWidth="1160.0" VBox.vgrow="ALWAYS">
                      <items>
                         <VBox prefHeight="200.0" prefWidth="100.0">
                            <children>
@@ -39,12 +39,12 @@
                                     <Insets />
                                  </VBox.margin>
                               </Label>
-                              <HBox alignment="CENTER" prefHeight="45.0" prefWidth="488.0">
+                              <HBox alignment="CENTER" prefHeight="45.0" prefWidth="488.0" VBox.vgrow="ALWAYS">
                                  <children>
-                                    <ComboBox fx:id="logicalDisksBox" minWidth="60.0" onAction="#selectDiskAction" prefHeight="42.0" prefWidth="60.0" />
+                                    <ComboBox fx:id="logicalDisksBox" minWidth="60.0" onAction="#selectDiskAction" prefHeight="42.0" prefWidth="60.0" HBox.hgrow="ALWAYS" />
                                     <Button fx:id="pathUpButton" alignment="CENTER" mnemonicParsing="false" onAction="#buttonPathUpAction" prefHeight="42.0" prefWidth="42.0" textAlignment="CENTER" HBox.hgrow="ALWAYS">
                                        <graphic>
-                                          <ImageView fitHeight="20.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fitHeight="18.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../img/up.png" />
                                              </image>
@@ -54,7 +54,7 @@
                                     <TextField fx:id="clientPathField" editable="false" prefHeight="42.0" prefWidth="514.0" HBox.hgrow="ALWAYS" />
                                     <Button fx:id="refreshButtonClient" mnemonicParsing="false" onAction="#refreshClientFilesList" prefHeight="42.0" prefWidth="42.0" HBox.hgrow="ALWAYS">
                                        <graphic>
-                                          <ImageView fitHeight="20.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fitHeight="18.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../img/refresh.png" />
                                              </image>
@@ -66,7 +66,7 @@
                                     <Insets />
                                  </VBox.margin>
                               </HBox>
-                              <TableView fx:id="clientTableView" prefHeight="541.0" prefWidth="488.0" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+                              <TableView fx:id="clientTableView" prefHeight="431.0" prefWidth="700.0" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
                                 <columns>
                                   <TableColumn fx:id="iconColumnClient" editable="false" maxWidth="50.0" minWidth="25.0" prefWidth="30.0" text="Тип" />
                                   <TableColumn fx:id="nameColumnClient" maxWidth="600.0" minWidth="60.0" prefWidth="212.0" text="Имя" />
@@ -89,11 +89,11 @@
                                     <Font size="14.0" />
                                  </font>
                               </Label>
-                              <HBox alignment="CENTER" prefHeight="45.0" prefWidth="445.0">
+                              <HBox alignment="CENTER" prefHeight="45.0" prefWidth="445.0" VBox.vgrow="ALWAYS">
                                  <children>
                                     <Button fx:id="pathUpButtonServer" alignment="CENTER" mnemonicParsing="false" onAction="#buttonPathUpServerAction" prefHeight="42.0" prefWidth="42.0" HBox.hgrow="ALWAYS">
                                        <graphic>
-                                          <ImageView fitHeight="20.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fitHeight="18.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../img/up.png" />
                                              </image>
@@ -103,7 +103,7 @@
                                     <TextField fx:id="serverPathField" editable="false" prefHeight="42.0" prefWidth="369.0" HBox.hgrow="ALWAYS" />
                                     <Button fx:id="refreshButtonServer" mnemonicParsing="false" onAction="#refreshServerFilesList" prefHeight="42.0" prefWidth="42.0" HBox.hgrow="ALWAYS">
                                        <graphic>
-                                          <ImageView fitHeight="20.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fitHeight="18.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../img/refresh.png" />
                                              </image>
@@ -112,7 +112,7 @@
                                     </Button>
                                  </children>
                               </HBox>
-                              <TableView fx:id="serverTableView" prefHeight="541.0" prefWidth="488.0" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
+                              <TableView fx:id="serverTableView" prefHeight="431.0" prefWidth="452.0" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
                                 <columns>
                                   <TableColumn fx:id="iconColumnServer" maxWidth="50.0" minWidth="25.0" prefWidth="28.0" text="Тип" />
                                   <TableColumn fx:id="nameColumnServer" maxWidth="600.0" minWidth="50.0" prefWidth="166.0" text="Имя" />
@@ -130,45 +130,45 @@
                         <Insets left="20.0" right="20.0" top="10.0" />
                      </VBox.margin>
                   </SplitPane>
-                  <HBox alignment="CENTER" prefHeight="40.0" prefWidth="984.0" spacing="10.0" VBox.vgrow="ALWAYS">
+                  <HBox alignment="CENTER" prefHeight="35.0" prefWidth="984.0" spacing="10.0" VBox.vgrow="ALWAYS">
                      <children>
-                        <Button fx:id="downloadButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#downloadButtonAction" prefHeight="40.0" prefWidth="287.0" style="-fx-background-color: #2196f3;" text="Скачать файл" textFill="WHITE" HBox.hgrow="ALWAYS">
+                        <Button fx:id="downloadButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#downloadButtonAction" prefHeight="35.0" prefWidth="287.0" style="-fx-background-color: #2196f3;" text="Скачать файл" textFill="WHITE" HBox.hgrow="ALWAYS">
                            <font>
                               <Font name="System Bold" size="14.0" />
                            </font>
                            <graphic>
-                              <ImageView fitHeight="25.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+                              <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
                                     <Image url="@../img/download_button.png" />
                                  </image>
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="uploadButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#uploadButtonAction" prefHeight="40.0" prefWidth="295.0" style="-fx-background-color: #2196f3;" text="Отправить в облако" textFill="WHITE" HBox.hgrow="ALWAYS">
+                        <Button fx:id="uploadButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#uploadButtonAction" prefHeight="35.0" prefWidth="295.0" style="-fx-background-color: #2196f3;" text="Отправить в облако" textFill="WHITE" HBox.hgrow="ALWAYS">
                            <font>
                               <Font name="System Bold" size="14.0" />
                            </font>
                            <graphic>
-                              <ImageView fitHeight="25.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
+                              <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
                                     <Image url="@../img/upload_button.png" />
                                  </image>
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="renameButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#renameButtonAction" prefHeight="40.0" prefWidth="217.0" style="-fx-background-color: #2196f3;" text="Переименовать" textFill="WHITE" HBox.hgrow="ALWAYS">
+                        <Button fx:id="renameButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#renameButtonAction" prefHeight="35.0" prefWidth="217.0" style="-fx-background-color: #2196f3;" text="Переименовать" textFill="WHITE" HBox.hgrow="ALWAYS">
                            <font>
                               <Font name="System Bold" size="14.0" />
                            </font>
                            <graphic>
-                              <ImageView fitHeight="23.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                              <ImageView fitHeight="21.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
                                     <Image url="@../img/rename_button.png" />
                                  </image>
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="deleteButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#deleteButtonAction" prefHeight="40.0" prefWidth="186.0" style="-fx-background-color: #2196f3;" text="Удалить" textFill="WHITE" HBox.hgrow="ALWAYS">
+                        <Button fx:id="deleteButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#deleteButtonAction" prefHeight="35.0" prefWidth="186.0" style="-fx-background-color: #2196f3;" text="Удалить" textFill="WHITE" HBox.hgrow="ALWAYS">
                            <font>
                               <Font name="System Bold" size="14.0" />
                            </font>

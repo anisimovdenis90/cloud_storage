@@ -360,20 +360,20 @@ public class MainWindowController implements Initializable {
             return;
         }
         if (clientPath != null) {
-                String newName = showTextInputDialog(clientPath.getFileName().toString(),
-                        "Переименование файла " + clientPath.getFileName(),
-                        "Введите новое имя файла: "
-                );
-                if (newName != null) {
-                    try {
-                        Files.move(clientPath, Paths.get(clientPath.getParent().toString(), newName));
-                        clientTable.updateList(clientPath.getParent());
-                    } catch (IOException e) {
-                        String message = "Ошибка переименования! Файл " + clientPath.getFileName() + " занят другим процессом";
-                        System.out.println(message);
-                        showInfoAlert(message, Alert.AlertType.WARNING, true);
-                    }
+            String newName = showTextInputDialog(clientPath.getFileName().toString(),
+                    "Переименование файла " + clientPath.getFileName(),
+                    "Введите новое имя файла: "
+            );
+            if (newName != null) {
+                try {
+                    Files.move(clientPath, Paths.get(clientPath.getParent().toString(), newName));
+                    clientTable.updateList(clientPath.getParent());
+                } catch (IOException e) {
+                    String message = "Ошибка переименования! Файл " + clientPath.getFileName() + " занят другим процессом";
+                    System.out.println(message);
+                    showInfoAlert(message, Alert.AlertType.WARNING, true);
                 }
+            }
         } else {
             String newName = showTextInputDialog(serverPath.getFileName().toString(),
                     "Переименование файла " + serverPath.getFileName() + " на сервере",

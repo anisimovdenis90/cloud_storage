@@ -8,33 +8,14 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
-
-
 public class FileInfo implements Serializable {
 
-    private static final long serialVersionUID = 1l;
-
-    public enum FileType {
-        FILE("F"),
-        DIRECTORY("D");
-
-        private String name;
-
-        public String getName() {
-            return name;
-        }
-
-        FileType(String name) {
-            this.name = name;
-        }
-    }
-
-    private FileType type;
-    private String typeName;
+    private static final long serialVersionUID = 1L;
+    private final FileType type;
+    private final String typeName;
     private String fileName;
     private long size;
-    private String lastModified;
-
+    private final String lastModified;
     public FileInfo(Path path) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         try {
@@ -51,17 +32,16 @@ public class FileInfo implements Serializable {
         }
     }
 
-
     public String getFileName() {
         return fileName;
     }
 
-    public String getTypeName() {
-        return typeName;
-    }
-
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public String getTypeName() {
+        return typeName;
     }
 
     public FileType getType() {
@@ -76,5 +56,19 @@ public class FileInfo implements Serializable {
         return lastModified;
     }
 
+    public enum FileType {
+        FILE("F"),
+        DIRECTORY("D");
+
+        private final String name;
+
+        FileType(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
 }
 

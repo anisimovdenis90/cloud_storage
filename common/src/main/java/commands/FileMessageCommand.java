@@ -40,16 +40,16 @@ public class FileMessageCommand implements Serializable {
         return data;
     }
 
+    public void setData(byte[] data) {
+        this.data = data;
+    }
+
     public int getPartsOfFile() {
         return partsOfFile;
     }
 
     public int getPartNumber() {
         return partNumber;
-    }
-
-    public void setData(byte[] data) {
-        this.data = data;
     }
 
     public void setPartNumber(int partNumber) {

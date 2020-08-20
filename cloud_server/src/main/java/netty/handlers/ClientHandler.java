@@ -21,9 +21,9 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     private static final int DEFAULT_BUFFER_SIZE = 1024 * 1024 * 10;
     private final String serverDir;
     private final AuthService authService;
-    private String userId;
-    private String rootClientDirectory;
-    private String clientDir;
+    private final String userId;
+    private final String rootClientDirectory;
+    private final String clientDir;
     private String currentClientDir;
 
     private FileOutputStream fileWriter;
@@ -100,7 +100,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             Path deletePath = Paths.get(serverDir, command.getFileName());
             Files.delete(deletePath);
             ctx.writeAndFlush(new MessageCommand("Файл " + deletePath.getFileName() + " успешно удален с сервера"));
-            System.out.printf("Файл " + deletePath.getFileName() + " успешно удален с сервера");
+            System.out.println("Файл " + deletePath.getFileName() + " успешно удален с сервера");
         } catch (IOException e) {
             System.out.println("Ошибка удаления файла с сервера " + command.getFileName());
             ctx.writeAndFlush(new ErrorCommand("Невозможно удалить файл с сервера, попробуйте повторить позже."));
@@ -187,7 +187,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                 System.out.printf("Ошибка передачи файла %s клиенту %s%n", command.getFileToDownload(), userId);
                 e.printStackTrace();
             }
-        }) .start();
+        }).start();
     }
 
     private void createClientDirectory() {

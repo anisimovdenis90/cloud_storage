@@ -15,9 +15,9 @@ public class OperationTableController {
     protected TableColumn<TransferItem, Button> goToFileColumn;
     protected TableColumn<TransferItem, Button> deleteItemColumn;
 
-    private MainWindowController mainWindowController;
-    private ClientPanelController clientPanel;
-    private ServerPanelController serverPanel;
+    private final MainWindowController mainWindowController;
+    private final ClientPanelController clientPanel;
+    private final ServerPanelController serverPanel;
 
     public OperationTableController(TableView<TransferItem> operationTable,
                                     TableColumn<TransferItem, String> operationColumn,
@@ -29,7 +29,7 @@ public class OperationTableController {
                                     MainWindowController mainWindowController,
                                     ClientPanelController clientPanel,
                                     ServerPanelController serverPanel
-                                    ) {
+    ) {
         this.operationTable = operationTable;
         this.operationColumn = operationColumn;
         this.infoColumn = infoColumn;
@@ -72,7 +72,9 @@ public class OperationTableController {
 
     private void setDeleteItemButtonAction(TransferItem item) {
         item.getDeleteItemButton().setOnAction(event -> operationTable.getItems().remove(item));
+        item.getDeleteItemButton().setTooltip(new Tooltip("Удалить из истории"));
     }
+
     private void setInfoButtonAction(TransferItem item) {
         item.getInfoButton().setOnAction(event -> {
             if (item.isSuccess()) {
@@ -87,6 +89,7 @@ public class OperationTableController {
                 mainWindowController.showInfoAlert("Ошибка передачи файла " + item.getFileName(), Alert.AlertType.INFORMATION, false);
             }
         });
+        item.getInfoButton().setTooltip(new Tooltip("Информация об операции"));
     }
 
     private void setGoToFileButtonAction(TransferItem item) {
@@ -97,5 +100,6 @@ public class OperationTableController {
                 serverPanel.updateList(item.getDstFile());
             }
         });
+        item.getGoToFileButton().setTooltip(new Tooltip("Перейти в каталог с файлом"));
     }
 }
