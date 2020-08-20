@@ -38,6 +38,7 @@ public class TransferItem {
         this.infoButton = new Button("Инфо");
         this.deleteItemButton = new Button("", new ImageView("img/delete.png"));
         this.goToFileButton = new Button("", new ImageView("img/link.png"));
+        disableButtons();
     }
 
     public Path getSourceFile() {
@@ -86,5 +87,17 @@ public class TransferItem {
 
     public void setProgressIndicator(double progressValue) {
         progressIndicator.setProgress(progressValue);
+    }
+
+    public void disableButtons() {
+        deleteItemButton.setDisable(true);
+        goToFileButton.setDisable(true);
+        infoButton.setDisable(true);
+    }
+
+    public void enableButtons() {
+        deleteItemButton.setDisable(false);
+        goToFileButton.setDisable(false);
+        infoButton.setDisable(false);
     }
 }

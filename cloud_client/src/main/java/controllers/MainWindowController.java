@@ -5,6 +5,7 @@ import commands.FilesListCommand;
 import commands.GetFilesListCommand;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -163,12 +164,36 @@ public class MainWindowController implements Initializable {
         MenuItem refreshClientItem = new MenuItem("Обновить");
         MenuItem refreshServerItem = new MenuItem("Обновить");
 
-        downloadItem.setOnAction(event -> downloadButtonAction());
-        uploadItem.setOnAction(event -> uploadButtonAction());
-        renameClientItem.setOnAction(event -> renameButtonAction());
-        renameServerItem.setOnAction(event -> renameButtonAction());
-        deleteClientItem.setOnAction(event -> deleteButtonAction());
-        deleteServerItem.setOnAction(event -> deleteButtonAction());
+        downloadItem.setOnAction(event -> {
+            if (!downloadButton.isDisabled()) {
+                downloadButtonAction();
+            }
+        });
+        uploadItem.setOnAction(event -> {
+            if (!uploadButton.isDisabled()) {
+                uploadButtonAction();
+            }
+        });
+        renameClientItem.setOnAction(event -> {
+            if (!renameButton.isDisabled()) {
+                renameButtonAction();
+            }
+        });
+        renameServerItem.setOnAction(event -> {
+            if (!renameButton.isDisabled()) {
+                renameButtonAction();
+            }
+        });
+        deleteClientItem.setOnAction(event -> {
+            if (!deleteButton.isDisabled()) {
+                deleteButtonAction();
+            }
+        });
+        deleteServerItem.setOnAction(event -> {
+            if (!deleteButton.isDisabled()) {
+                deleteButtonAction();
+            }
+        });
         refreshClientItem.setOnAction(event -> refreshClientFilesList());
         refreshServerItem.setOnAction(event -> refreshServerFilesList());
 

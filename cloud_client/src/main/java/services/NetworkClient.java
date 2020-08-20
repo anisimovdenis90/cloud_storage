@@ -101,6 +101,7 @@ public class NetworkClient {
                 System.out.printf("Файл %s успешно скачен с сервера%n", transferItem.getSourceFile());
                 fileWriter.close();
                 transferItem.setSuccess(true);
+                transferItem.enableButtons();
                 callBack.call(transferItem.getDstFile());
             } catch (IOException | ClassNotFoundException e) {
                 transferItem.setSuccess(false);
@@ -142,6 +143,7 @@ public class NetworkClient {
                 }
                 System.out.printf("Файл %s успешно отправлен на сервер%n", transferItem.getSourceFile());
                 transferItem.setSuccess(true);
+                transferItem.enableButtons();
                 callBack.call(transferItem.getDstFile());
             } catch (IOException e) {
                 transferItem.setSuccess(false);
