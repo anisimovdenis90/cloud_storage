@@ -241,6 +241,19 @@ public class MainWindowController implements Initializable {
             showInfoAlert(message, Alert.AlertType.WARNING, true);
             return;
         }
+        Path checkedPath = Paths.get(clientTable.getCurrentPath(), fileInfo.getFileName());
+        if (Files.exists(checkedPath)) {
+            if (showConfirmAlert("Файл " + fileInfo.getFileName() + " уже существует, желаете перезаписать?")) {
+                try {
+                    Files.delete(checkedPath);
+                } catch (IOException e) {
+                    showInfoAlert("Невозможно перезаписать файл, " + fileInfo.getFileName() + "нет доступа", Alert.AlertType.WARNING, true);
+                    return;
+                }
+            } else {
+                return;
+            }
+        }
         String currentServerDir = serverTable.getCurrentPath();
         Path sourcePath = Paths.get(currentServerDir, fileInfo.getFileName());
         Path destPath = Paths.get(clientTable.getCurrentPath());
@@ -248,7 +261,7 @@ public class MainWindowController implements Initializable {
         TransferItem item = new TransferItem(TransferItem.Operation.DOWNLOAD, sourcePath, destPath);
         operationTableController.updateOperationTable(item);
 
-        NetworkClient.getInstance().getFileFromServer(sourcePath, destPath, item, this::refreshClientFilesList);
+        NetworkClient.getInstance().getFileFromServer(item, this::refreshClientFilesList);
         disableButtons();
     }
 
@@ -270,7 +283,7 @@ public class MainWindowController implements Initializable {
         TransferItem item = new TransferItem(TransferItem.Operation.UPLOAD, sourcePath, destPath);
         operationTableController.updateOperationTable(item);
 
-        NetworkClient.getInstance().sendFileToServer(sourcePath, destPath, item, this::refreshServerFilesList);
+        NetworkClient.getInstance().sendFileToServer(item, this::refreshServerFilesList);
         disableButtons();
     }
 

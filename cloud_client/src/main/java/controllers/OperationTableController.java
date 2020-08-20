@@ -80,9 +80,9 @@ public class OperationTableController {
             if (item.isSuccess()) {
                 String message;
                 if (item.getOperation().equals(TransferItem.Operation.DOWNLOAD)) {
-                    message = "Файл " + item.getFileName() + " успешно скачен с сервера в папку " + item.getDstFile();
+                    message = "Файл " + item.getSourceFile().getFileName() + " успешно скачен с сервера в папку " + item.getDstFile();
                 } else {
-                    message = "Файл " + item.getFileName() + " успешно загружен на сервер в папку " + item.getDstFile();
+                    message = "Файл " + item.getSourceFile().getFileName() + " успешно загружен на сервер в папку " + item.getDstFile();
                 }
                 mainWindowController.showInfoAlert(message, Alert.AlertType.INFORMATION, false);
             } else {

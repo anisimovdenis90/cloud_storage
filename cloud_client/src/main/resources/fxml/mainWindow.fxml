@@ -241,16 +241,19 @@
                         </Label>
                         <TableView fx:id="operationTable" editable="true" prefHeight="133.0" prefWidth="912.0" VBox.vgrow="ALWAYS">
                           <columns>
-                            <TableColumn fx:id="operationColumn" minWidth="60.0" prefWidth="99.0" sortable="false" text="Операция" />
-                            <TableColumn fx:id="infoColumn" minWidth="60.0" prefWidth="114.0" sortable="false" text="Информация" />
-                              <TableColumn fx:id="fileNameColumn" minWidth="200.0" prefWidth="377.0" text="Имя файла" />
-                              <TableColumn fx:id="progressColumn" minWidth="100.0" prefWidth="171.0" sortable="false" text="Прогресс" />
-                              <TableColumn fx:id="goToFileColumn" minWidth="100.0" prefWidth="147.0" sortable="false" text="Перейти к файлу" />
-                              <TableColumn fx:id="deleteItemColumn" minWidth="100.0" prefWidth="135.0" sortable="false" text="Удалить запись" />
+                            <TableColumn fx:id="operationColumn" maxWidth="150.0" minWidth="60.0" prefWidth="60.0" sortable="false" text="Операция" />
+                            <TableColumn fx:id="infoColumn" maxWidth="200.0" minWidth="70.0" sortable="false" text="Информация" />
+                              <TableColumn fx:id="fileNameColumn" maxWidth="2000.0" minWidth="450.0" prefWidth="500.0" text="Имя файла" />
+                              <TableColumn fx:id="progressColumn" maxWidth="150.0" minWidth="50.0" prefWidth="60.0" sortable="false" text="Прогресс" />
+                              <TableColumn fx:id="goToFileColumn" maxWidth="250.0" minWidth="90.0" prefWidth="100.0" sortable="false" text="Перейти к файлу" />
+                              <TableColumn fx:id="deleteItemColumn" maxWidth="200.0" minWidth="90.0" prefWidth="100.0" sortable="false" text="Удалить запись" />
                           </columns>
                            <VBox.margin>
                               <Insets bottom="20.0" right="20.0" />
                            </VBox.margin>
+                           <columnResizePolicy>
+                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                           </columnResizePolicy>
                         </TableView>
                      </children>
                      <HBox.margin>

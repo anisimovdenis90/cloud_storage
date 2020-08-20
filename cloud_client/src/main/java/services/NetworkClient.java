@@ -81,50 +81,52 @@ public class NetworkClient {
         }
     }
 
-    public void getFileFromServer(Path sourcePath, Path destPath, TransferItem item, FinishedCallBack callBack) {
-        sendCommandToServer(new FileRequestCommand(sourcePath.toString()));
+    public void getFileFromServer(TransferItem transferItem, FinishedCallBack callBack) {
+        sendCommandToServer(new FileRequestCommand(transferItem.getSourceFile().toString()));
         new Thread(() -> {
             try {
-                FileOutputStream fileWriter = new FileOutputStream(destPath.toString() + "/" + sourcePath.getFileName().toString(), true);
+                FileOutputStream fileWriter = new FileOutputStream(transferItem.getDstFile() + "/" + transferItem.getSourceFile().getFileName(),
+                        true
+                );
                 while (true) {
                     FileMessageCommand command = (FileMessageCommand) in.readObject();
                     final int totalPartsProgress = command.getPartsOfFile();
                     final int actualPart = command.getPartNumber();
                     fileWriter.write(command.getData());
-                    Platform.runLater(() -> item.setProgressIndicator((double) actualPart / totalPartsProgress));
+                    Platform.runLater(() -> transferItem.setProgressIndicator((double) actualPart / totalPartsProgress));
                     if (command.getPartNumber() == command.getPartsOfFile()) {
                         break;
                     }
                 }
-                System.out.printf("Файл %s успешно скачен с сервера%n", sourcePath);
+                System.out.printf("Файл %s успешно скачен с сервера%n", transferItem.getSourceFile());
                 fileWriter.close();
-                item.setSuccess(true);
-                callBack.call(destPath);
+                transferItem.setSuccess(true);
+                callBack.call(transferItem.getDstFile());
             } catch (IOException | ClassNotFoundException e) {
-                item.setSuccess(false);
-                System.out.printf("Ошибка скачивания файла %s с сервера%n", sourcePath);
+                transferItem.setSuccess(false);
+                System.out.printf("Ошибка скачивания файла %s с сервера%n", transferItem.getSourceFile());
                 e.printStackTrace();
             }
         }).start();
     }
 
-    public void sendFileToServer(Path sourcePath, Path destPath, TransferItem item, FinishedCallBack callBack) {
+    public void sendFileToServer(TransferItem transferItem, FinishedCallBack callBack) {
         new Thread(() -> {
-            final long fileSize = sourcePath.toFile().length();
+            final long fileSize = transferItem.getSourceFile().toFile().length();
             int partsOfFile = (int) fileSize / DEFAULT_BUFFER_SIZE;
             if (fileSize % DEFAULT_BUFFER_SIZE != 0) {
                 partsOfFile++;
             }
             final int totalPartsProgress = partsOfFile;
             FileMessageCommand fileToServerCommand = new FileMessageCommand(
-                    sourcePath.getFileName().toString(),
-                    destPath.toString(),
+                    transferItem.getSourceFile().getFileName().toString(),
+                    transferItem.getDstFile().toString(),
                     fileSize,
                     partsOfFile,
                     0,
                     new byte[DEFAULT_BUFFER_SIZE]
             );
-            try (FileInputStream fileReader = new FileInputStream(sourcePath.toFile())) {
+            try (FileInputStream fileReader = new FileInputStream(transferItem.getSourceFile().toFile())) {
                 int readBytes;
                 int partsSend = 0;
                 for (int i = 0; i < partsOfFile; i++) {
@@ -136,14 +138,14 @@ public class NetworkClient {
                     out.writeObject(fileToServerCommand);
                     partsSend++;
                     final int actualPart = partsSend;
-                    Platform.runLater(() -> item.setProgressIndicator((double) actualPart / totalPartsProgress));
+                    Platform.runLater(() -> transferItem.setProgressIndicator((double) actualPart / totalPartsProgress));
                 }
-                System.out.printf("Файл %s успешно отправлен на сервер%n", sourcePath);
-                item.setSuccess(true);
-                callBack.call(destPath);
+                System.out.printf("Файл %s успешно отправлен на сервер%n", transferItem.getSourceFile());
+                transferItem.setSuccess(true);
+                callBack.call(transferItem.getDstFile());
             } catch (IOException e) {
-                item.setSuccess(false);
-                System.out.printf("Ошибка отправки файла %s на сервер%n", sourcePath);
+                transferItem.setSuccess(false);
+                System.out.printf("Ошибка отправки файла %s на сервер%n", transferItem.getSourceFile());
                 e.printStackTrace();
             }
         }).start();
