@@ -16,6 +16,7 @@ public class FileInfo implements Serializable {
     private String fileName;
     private long size;
     private final String lastModified;
+
     public FileInfo(Path path) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         try {

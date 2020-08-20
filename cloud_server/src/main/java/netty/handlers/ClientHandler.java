@@ -125,13 +125,18 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void getFileFromClient(FileMessageCommand command) {
-        if (fileWriter == null) {
-            System.out.printf("Начало получения файла %s от клиента %s%n", command.getFileName(), userId);
-            Path destPath = Paths.get(serverDir, command.getDestPath(), command.getFileName());
-            createFileWriter(destPath);
-            System.out.println("Абсолютный путь загрузки " + destPath);
-        }
         try {
+            if (fileWriter == null) {
+                System.out.printf("Начало получения файла %s от клиента %s%n", command.getFileName(), userId);
+                Path destPath = Paths.get(serverDir, command.getDestPath(), command.getFileName());
+                if (Files.exists(destPath)) {
+                    System.out.printf("Файл %s уже существует на сервере, выполняется удаление%n", command.getFileName());
+                    Files.delete(destPath);
+                    System.out.println("Выполнено удаление");
+                }
+                createFileWriter(destPath);
+                System.out.println("Абсолютный путь загрузки " + destPath);
+            }
             fileWriter.write(command.getData());
             if (command.getPartNumber() == command.getPartsOfFile()) {
                 fileWriter.close();

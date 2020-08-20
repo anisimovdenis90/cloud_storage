@@ -33,3 +33,7 @@
 	-fx-border-color: transparent;
 	-fx-border-width: 1;
 }
+
+#operationColumn, #infoColumn, #goToFileColumn, #deleteItemColumn {
+    -fx-alignment: TOP-CENTER;
+}

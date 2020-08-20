@@ -1,7 +1,5 @@
 package util;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.ImageView;
@@ -15,15 +13,15 @@ public class TransferItem {
         UPLOAD
     }
 
-    private Operation operation;
+    private final Operation operation;
     private ImageView operationImage;
-    private Path sourceFile;
-    private String fileName;
-    private Path dstFile;
-    private ProgressIndicator progressIndicator;
-    private Button infoButton;
-    private Button deleteItemButton;
-    private Button goToFileButton;
+    private final Path sourceFile;
+    private final String fileName;
+    private final Path dstFile;
+    private final ProgressIndicator progressIndicator;
+    private final Button infoButton;
+    private final Button deleteItemButton;
+    private final Button goToFileButton;
     private boolean isSuccess = false;
 
     public TransferItem(Operation operation, Path sourceFile, Path dstFile) {
@@ -34,16 +32,12 @@ public class TransferItem {
             operationImage = new ImageView("img/upload.png");
         }
         this.sourceFile = sourceFile;
-        this.fileName = sourceFile.getFileName().toString();
+        this.fileName = dstFile.toString() + "\\" + sourceFile.getFileName();
         this.dstFile = dstFile;
         this.progressIndicator = new ProgressIndicator();
         this.infoButton = new Button("Инфо");
         this.deleteItemButton = new Button("", new ImageView("img/delete.png"));
         this.goToFileButton = new Button("", new ImageView("img/link.png"));
-    }
-
-    public void setSuccess(boolean success) {
-        isSuccess = success;
     }
 
     public Path getSourceFile() {
@@ -80,6 +74,10 @@ public class TransferItem {
 
     public boolean isSuccess() {
         return isSuccess;
+    }
+
+    public void setSuccess(boolean success) {
+        isSuccess = success;
     }
 
     public ProgressIndicator getProgressIndicator() {
