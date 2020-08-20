@@ -1,7 +1,10 @@
 package controllers;
 
 import javafx.event.ActionEvent;
-import javafx.scene.control.*;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import util.FileInfo;
 
@@ -20,10 +23,6 @@ public abstract class PanelController {
 
     protected Path rootPath;
 
-    public void setRootPath(String rootPath) {
-        this.rootPath = Paths.get(rootPath);
-    }
-
     public PanelController(TableView<FileInfo> table,
                            TableColumn<FileInfo, String> typeFileColumn,
                            TableColumn<FileInfo, String> fileNameColumn,
@@ -38,6 +37,10 @@ public abstract class PanelController {
         this.fileDateColumn = fileDateColumn;
         this.pathField = pathField;
         initialize();
+    }
+
+    public void setRootPath(String rootPath) {
+        this.rootPath = Paths.get(rootPath);
     }
 
     private void initialize() {
@@ -103,10 +106,10 @@ public abstract class PanelController {
             long sizeInKb = fileSize / 1024;
             return sizeInKb + " KB";
         } else if (fileSize < 1024 * 1024 * 1024) {
-            long sizeInMb = fileSize / (1024*1024);
+            long sizeInMb = fileSize / (1024 * 1024);
             return sizeInMb + " MB";
         } else {
-            long sizeInGb = fileSize / (1024*1024*1024);
+            long sizeInGb = fileSize / (1024 * 1024 * 1024);
             return sizeInGb + " GB";
         }
     }

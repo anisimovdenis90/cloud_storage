@@ -7,7 +7,7 @@ import java.sql.SQLException;
 
 public class AuthService {
 
-    private DBConnector dbConnector;
+    private final DBConnector dbConnector;
 
     public AuthService(DBConnector dbConnector) {
         this.dbConnector = dbConnector;

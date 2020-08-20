@@ -6,8 +6,8 @@ import java.sql.SQLException;
 
 public class SQLiteDBConnector implements DBConnector {
 
-    private Connection connection = null;
-    private String URL = "jdbc:sqlite:./cloud_storage_db.db";
+    private final Connection connection = null;
+    private final String URL = "jdbc:sqlite:./cloud_storage_db.db";
 
     public void start() {
         System.out.println("Сервер базы данных запущен");
