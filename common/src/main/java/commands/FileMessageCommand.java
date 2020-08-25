@@ -9,13 +9,13 @@ public class FileMessageCommand implements Serializable {
     private final String fileName;
     private final String destPath;
     private final long fileSize;
-    private final int partsOfFile;
+    private final long partsOfFile;
 
-    private int partNumber;
+    private long partNumber;
     private byte[] data;
 
 
-    public FileMessageCommand(String fileName, String destPath, long fileSize, int partsOfFile, int partNumber, byte[] data) {
+    public FileMessageCommand(String fileName, String destPath, long fileSize, long partsOfFile, long partNumber, byte[] data) {
         this.fileName = fileName;
         this.destPath = destPath;
         this.fileSize = fileSize;
@@ -44,15 +44,15 @@ public class FileMessageCommand implements Serializable {
         this.data = data;
     }
 
-    public int getPartsOfFile() {
+    public long getPartsOfFile() {
         return partsOfFile;
     }
 
-    public int getPartNumber() {
+    public long getPartNumber() {
         return partNumber;
     }
 
-    public void setPartNumber(int partNumber) {
+    public void setPartNumber(long partNumber) {
         this.partNumber = partNumber;
     }
 }

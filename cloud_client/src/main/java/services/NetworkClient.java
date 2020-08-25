@@ -1,9 +1,6 @@
 package services;
 
-import commands.DeleteFileCommand;
-import commands.FileMessageCommand;
-import commands.FileRequestCommand;
-import commands.RenameFileCommand;
+import commands.*;
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
 import javafx.application.Platform;
@@ -15,7 +12,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 public class NetworkClient {
 
@@ -90,8 +89,8 @@ public class NetworkClient {
                 );
                 while (true) {
                     FileMessageCommand command = (FileMessageCommand) in.readObject();
-                    final int totalPartsProgress = command.getPartsOfFile();
-                    final int actualPart = command.getPartNumber();
+                    final long totalPartsProgress = command.getPartsOfFile();
+                    final long actualPart = command.getPartNumber();
                     fileWriter.write(command.getData());
                     Platform.runLater(() -> transferItem.setProgressIndicator((double) actualPart / totalPartsProgress));
                     if (command.getPartNumber() == command.getPartsOfFile()) {
@@ -111,14 +110,16 @@ public class NetworkClient {
         }).start();
     }
 
-    public void sendFileToServer(TransferItem transferItem, FinishedCallBack callBack) {
+    public void sendFileToServer(TransferItem transferItem, Consumer<Path> callBack) {
         new Thread(() -> {
+            System.out.println("Начало передачи файла " + transferItem.getSourceFile() + " на сервер");
             final long fileSize = transferItem.getSourceFile().toFile().length();
-            int partsOfFile = (int) fileSize / DEFAULT_BUFFER_SIZE;
+            long partsOfFile = fileSize / DEFAULT_BUFFER_SIZE;
             if (fileSize % DEFAULT_BUFFER_SIZE != 0) {
                 partsOfFile++;
             }
-            final int totalPartsProgress = partsOfFile;
+            System.out.println("Размер файла " + fileSize + "  Количество частей " + partsOfFile);
+            final long totalPartsProgress = partsOfFile;
             FileMessageCommand fileToServerCommand = new FileMessageCommand(
                     transferItem.getSourceFile().getFileName().toString(),
                     transferItem.getDstFile().toString(),
@@ -129,22 +130,22 @@ public class NetworkClient {
             );
             try (FileInputStream fileReader = new FileInputStream(transferItem.getSourceFile().toFile())) {
                 int readBytes;
-                int partsSend = 0;
-                for (int i = 0; i < partsOfFile; i++) {
+                long partsSend = 0;
+                do {
                     readBytes = fileReader.read(fileToServerCommand.getData());
-                    fileToServerCommand.setPartNumber(i + 1);
+                    fileToServerCommand.setPartNumber(partsSend + 1);
                     if (readBytes < DEFAULT_BUFFER_SIZE) {
                         fileToServerCommand.setData(Arrays.copyOfRange(fileToServerCommand.getData(), 0, readBytes));
                     }
                     out.writeObject(fileToServerCommand);
                     partsSend++;
-                    final int actualPart = partsSend;
+                    final long actualPart = partsSend;
                     Platform.runLater(() -> transferItem.setProgressIndicator((double) actualPart / totalPartsProgress));
-                }
+                } while (partsSend != partsOfFile);
                 System.out.printf("Файл %s успешно отправлен на сервер%n", transferItem.getSourceFile());
                 transferItem.setSuccess(true);
                 transferItem.enableButtons();
-                callBack.call(transferItem.getDstFile());
+                callBack.accept(transferItem.getDstFile());
             } catch (IOException e) {
                 transferItem.setSuccess(false);
                 System.out.printf("Ошибка отправки файла %s на сервер%n", transferItem.getSourceFile());
@@ -159,6 +160,10 @@ public class NetworkClient {
 
     public void renameFileOnServer(String oldFileName, String newFileName) {
         sendCommandToServer(new RenameFileCommand(oldFileName, newFileName));
+    }
+
+    public void createNewFolderOnServer(String currentServerDir, String newFolderName) {
+        sendCommandToServer(new CreateFolderCommand(Paths.get(currentServerDir, newFolderName).toString()));
     }
 
     public Object readCommandFromServer() {

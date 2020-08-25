@@ -5,7 +5,6 @@ import commands.FilesListCommand;
 import commands.GetFilesListCommand;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -15,10 +14,8 @@ import util.TransferItem;
 
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -84,6 +81,9 @@ public class MainWindowController implements Initializable {
 
     @FXML
     private Button uploadButton;
+
+    @FXML
+    private Button newFolderButton;
 
     @FXML
     private Button deleteButton;
@@ -155,14 +155,18 @@ public class MainWindowController implements Initializable {
     private void setContextMenusToTables() {
         ContextMenu clientContextMenu = new ContextMenu();
         ContextMenu serverContextMenu = new ContextMenu();
-        MenuItem downloadItem = new MenuItem("Скачать файл");
+        MenuItem downloadItem = new MenuItem("Скачать");
         MenuItem uploadItem = new MenuItem("Отправить в облако");
-        MenuItem renameClientItem = new MenuItem("Переименовать файл");
-        MenuItem renameServerItem = new MenuItem("Переименовать файл");
-        MenuItem deleteClientItem = new MenuItem("Удалить файл");
-        MenuItem deleteServerItem = new MenuItem("Удалить файл");
+        MenuItem newCatalogClientItem = new MenuItem("Создать папку");
+        MenuItem newCatalogServerItem = new MenuItem("Создать папку");
+        MenuItem renameClientItem = new MenuItem("Переименовать");
+        MenuItem renameServerItem = new MenuItem("Переименовать");
+        MenuItem deleteClientItem = new MenuItem("Удалить");
+        MenuItem deleteServerItem = new MenuItem("Удалить");
         MenuItem refreshClientItem = new MenuItem("Обновить");
         MenuItem refreshServerItem = new MenuItem("Обновить");
+        MenuItem pathUpClientItem = new MenuItem("Вверх");
+        MenuItem pathUpServerItem = new MenuItem("Вверх");
 
         downloadItem.setOnAction(event -> {
             if (!downloadButton.isDisabled()) {
@@ -194,11 +198,41 @@ public class MainWindowController implements Initializable {
                 deleteButtonAction();
             }
         });
+        newCatalogClientItem.setOnAction(event -> {
+            if (!newFolderButton.isDisabled()) {
+                createNewDirAction();
+            }
+        });
+        newCatalogServerItem.setOnAction(event -> {
+            if (!newFolderButton.isDisabled()) {
+                createNewDirAction();
+            }
+        });
         refreshClientItem.setOnAction(event -> refreshClientFilesList());
         refreshServerItem.setOnAction(event -> refreshServerFilesList());
+        pathUpClientItem.setOnAction(event -> buttonPathUpAction(event));
+        pathUpServerItem.setOnAction(event -> buttonPathUpServerAction(event));
 
-        clientContextMenu.getItems().addAll(refreshClientItem, new SeparatorMenuItem(), uploadItem, renameClientItem, deleteClientItem);
-        serverContextMenu.getItems().addAll(refreshServerItem, new SeparatorMenuItem(), downloadItem, renameServerItem, deleteServerItem);
+        clientContextMenu.getItems().addAll(
+                pathUpClientItem,
+                refreshClientItem,
+                new SeparatorMenuItem(),
+                uploadItem,
+                new SeparatorMenuItem(),
+                newCatalogClientItem,
+                renameClientItem,
+                deleteClientItem
+        );
+        serverContextMenu.getItems().addAll(
+                pathUpServerItem,
+                refreshServerItem,
+                new SeparatorMenuItem(),
+                downloadItem,
+                new SeparatorMenuItem(),
+                newCatalogServerItem,
+                renameServerItem,
+                deleteServerItem
+        );
 
         clientTableView.setContextMenu(clientContextMenu);
         serverTableView.setContextMenu(serverContextMenu);
@@ -250,6 +284,7 @@ public class MainWindowController implements Initializable {
         deleteButton.setDisable(true);
         downloadButton.setDisable(true);
         uploadButton.setDisable(true);
+        newFolderButton.setDisable(true);
     }
 
     private void enableButtons() {
@@ -257,6 +292,7 @@ public class MainWindowController implements Initializable {
         deleteButton.setDisable(false);
         downloadButton.setDisable(false);
         uploadButton.setDisable(false);
+        newFolderButton.setDisable(false);
     }
 
     public void downloadButtonAction() {
@@ -266,7 +302,7 @@ public class MainWindowController implements Initializable {
             showInfoAlert(message, Alert.AlertType.WARNING, true);
             return;
         }
-        Path checkedPath = Paths.get(clientTable.getCurrentPath(), fileInfo.getFileName());
+        Path checkedPath = Paths.get(clientTable.getCurrentPathStr(), fileInfo.getFileName());
         if (Files.exists(checkedPath)) {
             if (showConfirmAlert("Файл " + fileInfo.getFileName() + " уже существует, желаете перезаписать?")) {
                 try {
@@ -279,9 +315,9 @@ public class MainWindowController implements Initializable {
                 return;
             }
         }
-        String currentServerDir = serverTable.getCurrentPath();
+        String currentServerDir = serverTable.getCurrentPathStr();
         Path sourcePath = Paths.get(currentServerDir, fileInfo.getFileName());
-        Path destPath = Paths.get(clientTable.getCurrentPath());
+        Path destPath = Paths.get(clientTable.getCurrentPathStr());
 
         TransferItem item = new TransferItem(TransferItem.Operation.DOWNLOAD, sourcePath, destPath);
         operationTableController.updateOperationTable(item);
@@ -292,18 +328,18 @@ public class MainWindowController implements Initializable {
 
     public void uploadButtonAction() {
         String errorMessage = "Выберите файл, для отправки на сервер";
-        String fileName = clientTable.getSelectedFileName();
+        String fileName = clientTable.getSelectedFileNameStr();
         if (fileName == null) {
             showInfoAlert(errorMessage, Alert.AlertType.WARNING, true);
             return;
         }
-        String currentDir = clientTable.getCurrentPath();
+        String currentDir = clientTable.getCurrentPathStr();
         Path sourcePath = Paths.get(currentDir, fileName);
         if (Files.isDirectory(sourcePath)) {
             showInfoAlert(errorMessage, Alert.AlertType.WARNING, true);
             return;
         }
-        Path destPath = Paths.get(serverTable.getCurrentPath());
+        Path destPath = Paths.get(serverTable.getCurrentPathStr());
 
         TransferItem item = new TransferItem(TransferItem.Operation.UPLOAD, sourcePath, destPath);
         operationTableController.updateOperationTable(item);
@@ -315,7 +351,7 @@ public class MainWindowController implements Initializable {
     public void refreshServerFilesList(Path destDir) {
         Platform.runLater(() -> {
             enableButtons();
-            if (destDir.toString().equals(serverTable.getCurrentPath())) {
+            if (destDir.toString().equals(serverTable.getCurrentPathStr())) {
                 serverTable.updateList(destDir);
             }
         });
@@ -324,38 +360,24 @@ public class MainWindowController implements Initializable {
     public void refreshClientFilesList(Path destDir) {
         Platform.runLater(() -> {
             enableButtons();
-            if (destDir.toString().equals(clientTable.getCurrentPath())) {
+            if (destDir.toString().equals(clientTable.getCurrentPathStr())) {
                 clientTable.updateList(destDir);
             }
         });
     }
 
     public Path getSelectedPathFromClientPanel() {
-        if (clientTable.getSelectedFileName() == null) {
+        if (clientTable.getSelectedFileNameStr() == null) {
             return null;
         }
-        Path path = null;
-        if (clientTable.getSelectedFileName() != null) {
-            path = Paths.get(clientTable.getCurrentPath(), clientTable.getSelectedFileName());
-            if (Files.isDirectory(path)) {
-                return null;
-            }
-        }
-        return path;
+        return Paths.get(clientTable.getCurrentPathStr(), clientTable.getSelectedFileNameStr());
     }
 
     public Path getSelectedPathFromServerPanel() {
-        if (serverTable.getSelectedFileName() == null) {
+        if (serverTable.getSelectedFileNameStr() == null) {
             return null;
         }
-        Path path = null;
-        if (serverTable.getSelectedItem() != null) {
-            path = Paths.get(serverTable.getCurrentPath(), ((FileInfo) serverTable.getSelectedItem()).getFileName());
-            if (Files.isDirectory(path)) {
-                return null;
-            }
-        }
-        return path;
+        return Paths.get(serverTable.getCurrentPathStr(), ((FileInfo) serverTable.getSelectedItem()).getFileName());
     }
 
     public void deleteButtonAction() {
@@ -366,26 +388,63 @@ public class MainWindowController implements Initializable {
             return;
         }
         if (clientPath != null) {
-            if (showConfirmAlert("Вы уверены, что хотите удалить файл " + clientPath.getFileName())) {
+            if (Files.isDirectory(clientPath)) {
+                deleteDirectoryWithConfirmation(clientPath);
+            } else if (showConfirmAlert("Вы уверены, что хотите удалить файл " + clientPath.getFileName())) {
                 try {
                     Files.delete(clientPath);
                     clientTable.updateList(clientPath.getParent());
                 } catch (IOException e) {
                     String message = "Ошибка удаления! Файл " + clientPath.getFileName() + " занят другим процессом";
                     System.out.println(message);
+                    e.printStackTrace();
                     showInfoAlert(message, Alert.AlertType.WARNING, true);
                 }
             }
         } else {
-            if (showConfirmAlert("Вы уверены, что хотите удалить файл " + serverPath.getFileName() + " с сервера")) {
-                NetworkClient.getInstance().deleteFileFromServer(serverPath);
-                if (NetworkClient.getInstance().readCommandFromServer() instanceof ErrorCommand) {
-                    String message = "Ошибка удаления! Файл " + serverPath.getFileName() + " занят другим процессом";
-                    System.out.println(message);
-                    showInfoAlert(message, Alert.AlertType.WARNING, true);
-                } else {
-                    serverTable.updateList(serverPath.getParent());
+            if (((FileInfo) serverTable.getSelectedItem()).getType().equals(FileInfo.FileType.DIRECTORY)) {
+                if (showConfirmAlert("Вы уверены, что хотите удалить папку " + serverPath.getFileName() + " с сервера со всем содержимым?")) {
+                    deletePathFromServer(serverPath);
                 }
+            } else if (showConfirmAlert("Вы уверены, что хотите удалить файл " + serverPath.getFileName() + " с сервера")) {
+                deletePathFromServer(serverPath);
+            }
+        }
+    }
+
+    private void deletePathFromServer(Path serverPath) {
+        NetworkClient.getInstance().deleteFileFromServer(serverPath);
+        if (NetworkClient.getInstance().readCommandFromServer() instanceof ErrorCommand) {
+            String message = "Ошибка удаления! Файл " + serverPath.getFileName() + " занят другим процессом";
+            System.out.println(message);
+            showInfoAlert(message, Alert.AlertType.WARNING, true);
+        } else {
+            serverTable.updateList(serverPath.getParent());
+        }
+    }
+
+    private void deleteDirectoryWithConfirmation(Path clientPath) {
+        if (showConfirmAlert("Вы уверены, что хотите удалить папку " + clientPath.getFileName() + " со всем содержимым?")) {
+            try {
+                Files.walkFileTree(clientPath, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        System.out.println("Удален файл: " + file.toString());
+                        Files.delete(file);
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        System.out.println("Удален каталог: " + dir.toString());
+                        Files.delete(dir);
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+                clientTable.updateList(clientPath.getParent());
+            } catch (IOException e) {
+                System.out.println("Ошибка удаления папки " + clientPath);
+                e.printStackTrace();
             }
         }
     }
@@ -407,7 +466,7 @@ public class MainWindowController implements Initializable {
                     Files.move(clientPath, Paths.get(clientPath.getParent().toString(), newName));
                     clientTable.updateList(clientPath.getParent());
                 } catch (IOException e) {
-                    String message = "Ошибка переименования! Файл " + clientPath.getFileName() + " занят другим процессом";
+                    String message = "Ошибка переименования файла " + clientPath.getFileName() + ". Файл с таким именем уже существует.";
                     System.out.println(message);
                     showInfoAlert(message, Alert.AlertType.WARNING, true);
                 }
@@ -421,11 +480,49 @@ public class MainWindowController implements Initializable {
                 Path newPath = Paths.get(serverPath.getParent().toString(), newName);
                 NetworkClient.getInstance().renameFileOnServer(serverPath.toString(), newPath.toString());
                 if (NetworkClient.getInstance().readCommandFromServer() instanceof ErrorCommand) {
-                    String message = "Ошибка переименования! Файл " + serverPath.getFileName() + " занят другим процессом";
+                    String message = "Ошибка переименования файла " + serverPath.getFileName() + ". Файл с таким именем уже существует.";
                     System.out.println(message);
                     showInfoAlert(message, Alert.AlertType.WARNING, true);
                 } else {
                     serverTable.updateList(serverPath.getParent());
+                }
+            }
+        }
+    }
+
+    public void createNewDirAction() {
+        if (!clientTableView.isFocused() && !serverTableView.isFocused()) {
+            showInfoAlert("Для создания папки выберите окно", Alert.AlertType.INFORMATION, false);
+            return;
+        }
+        if (clientTableView.isFocused()) {
+            String newFolderName = showTextInputDialog("Новая папка",
+                    "Создать каталог на клиенте ",
+                    "Введите название папки: "
+            );
+            if (newFolderName != null) {
+                try {
+                    Files.createDirectories(Paths.get(clientTable.getCurrentPathStr(), newFolderName));
+                    clientTable.updateList(Paths.get(clientTable.getCurrentPathStr()));
+                } catch (IOException e) {
+                    String message = "Папка с именем " + newFolderName + " уже существует в текущем расположении";
+                    System.out.println(message);
+                    showInfoAlert(message, Alert.AlertType.WARNING, true);
+                }
+            }
+        } else {
+            String newFolderName = showTextInputDialog("Новая папка",
+                    "Создать каталог на сервере ",
+                    "Введите название папки: "
+            );
+            if (newFolderName != null) {
+                NetworkClient.getInstance().createNewFolderOnServer(serverTable.getCurrentPathStr(), newFolderName);
+                if (NetworkClient.getInstance().readCommandFromServer() instanceof ErrorCommand) {
+                    String message = "Папка с именем " + newFolderName + " уже существует в текущем расположении сервера";
+                    System.out.println(message);
+                    showInfoAlert(message, Alert.AlertType.WARNING, true);
+                } else {
+                    serverTable.updateList(Paths.get(serverTable.getCurrentPathStr()));
                 }
             }
         }
@@ -439,11 +536,11 @@ public class MainWindowController implements Initializable {
         return result.isPresent() && result.get() == ButtonType.OK;
     }
 
-    public String showTextInputDialog(String filename, String msgWithFileName, String message) {
+    public String showTextInputDialog(String filename, String headerText, String contentText) {
         TextInputDialog dialog = new TextInputDialog(filename);
-        dialog.setTitle("Окно ввода данных");
-        dialog.setHeaderText(msgWithFileName);
-        dialog.setContentText(message);
+        dialog.setTitle("Введите данные");
+        dialog.setHeaderText(headerText);
+        dialog.setContentText(contentText);
         Optional<String> result = dialog.showAndWait();
         return result.orElse(null);
     }
@@ -460,10 +557,10 @@ public class MainWindowController implements Initializable {
     }
 
     public void refreshServerFilesList() {
-        serverTable.updateList(Paths.get(serverTable.getCurrentPath()));
+        serverTable.updateList(Paths.get(serverTable.getCurrentPathStr()));
     }
 
     public void refreshClientFilesList() {
-        clientTable.updateList(Paths.get(clientTable.getCurrentPath()));
+        clientTable.updateList(Paths.get(clientTable.getCurrentPathStr()));
     }
 }

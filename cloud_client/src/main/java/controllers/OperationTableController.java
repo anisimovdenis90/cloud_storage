@@ -50,6 +50,7 @@ public class OperationTableController {
         progressColumn.setCellValueFactory(new PropertyValueFactory<>("progressIndicator"));
         goToFileColumn.setCellValueFactory(new PropertyValueFactory<>("goToFileButton"));
         deleteItemColumn.setCellValueFactory(new PropertyValueFactory<>("deleteItemButton"));
+        operationTable.setPlaceholder(new Label("Отсутствуют элементы для отображения"));
         addAutoScroll();
     }
 

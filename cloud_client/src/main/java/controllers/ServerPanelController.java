@@ -5,12 +5,15 @@ import commands.FilesListCommand;
 import commands.GetFilesListCommand;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import services.NetworkClient;
 import util.FileInfo;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ServerPanelController extends PanelController {
 
@@ -34,15 +37,14 @@ public class ServerPanelController extends PanelController {
     @Override
     public void updateList(Path path) {
         NetworkClient.getInstance().sendCommandToServer(new GetFilesListCommand(path));
-        System.out.println("Начало чтения команды с сервера");
+        System.out.println("Запрос на список файлов отправлен на сервер");
         Object receivedCommand = NetworkClient.getInstance().readCommandFromServer();
-        System.out.println("Команда с сервера прочитана");
         if (receivedCommand instanceof FilesListCommand) {
-            System.out.println("Получены файлы");
+            System.out.println("Список файлов получен");
             FilesListCommand command = (FilesListCommand) receivedCommand;
             pathField.setText(command.getCurrentServerPath());
             table.getItems().clear();
-            table.getItems().addAll(command.getFilesList());
+            table.getItems().addAll(setFileIconFromImage(command.getFilesList()));
             table.sort();
         } else if (receivedCommand instanceof ErrorCommand) {
             String message = ((ErrorCommand) receivedCommand).getErrorMessage();
@@ -51,10 +53,23 @@ public class ServerPanelController extends PanelController {
         }
     }
 
+    private List<FileInfo> setFileIconFromImage(List<FileInfo> list) {
+        Image folderIcon = new Image("img/folder.png");
+        Image fileIcon = new Image("img/file.png");
+        list.forEach(fileInfo -> {
+            if (fileInfo.getType().equals(FileInfo.FileType.DIRECTORY)) {
+                fileInfo.setFileIcon(new ImageView(folderIcon));
+            } else {
+                fileInfo.setFileIcon(new ImageView(fileIcon));
+            }
+        });
+        return list;
+    }
+
     public void updateList(List<FileInfo> filesList) {
         pathField.setText(rootPath.toString());
         table.getItems().clear();
-        table.getItems().addAll(filesList);
+        table.getItems().addAll(setFileIconFromImage(filesList));
         table.sort();
     }
 
@@ -62,6 +77,9 @@ public class ServerPanelController extends PanelController {
     public void setMouseOnTableAction() {
         table.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
+                if (!checkSelectedItemNotNull()) {
+                    return;
+                }
                 if (table.getSelectionModel().getSelectedItem().getType() == FileInfo.FileType.DIRECTORY) {
                     Path path = Paths.get(pathField.getText()).resolve(table.getSelectionModel().getSelectedItem().getFileName());
                     updateList(path);

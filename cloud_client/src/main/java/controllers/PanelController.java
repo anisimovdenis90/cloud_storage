@@ -1,15 +1,20 @@
 package controllers;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.event.EventHandler;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.util.Callback;
 import util.FileInfo;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.util.Comparator;
 
 public abstract class PanelController {
 
@@ -44,9 +49,9 @@ public abstract class PanelController {
     }
 
     private void initialize() {
-        typeFileColumn.setCellValueFactory(new PropertyValueFactory<>("typeName"));
+        typeFileColumn.setCellValueFactory(new PropertyValueFactory<>("fileIcon"));
         fileNameColumn.setCellValueFactory(new PropertyValueFactory<>("fileName"));
-        fileSizeColumn.setCellValueFactory(new PropertyValueFactory<>("size"));
+        fileSizeColumn.setCellValueFactory(new PropertyValueFactory<>("fileSize"));
         fileDateColumn.setCellValueFactory(new PropertyValueFactory<>("lastModified"));
 
         fileSizeColumn.setCellFactory(column -> new TableCell<FileInfo, Long>() {
@@ -59,11 +64,12 @@ public abstract class PanelController {
                 } else if (item == -1L) {
                     setText("-");
                 } else {
-                    String text = calculateSize(item);
+                    String text = sizeToStringFormatter(item);
                     setText(text);
                 }
             }
         });
+        table.setPlaceholder(new Label("Отсутствуют файлы для отображения"));
         setMouseOnTableAction();
     }
 
@@ -77,40 +83,42 @@ public abstract class PanelController {
 
     public abstract void setMouseOnTableAction();
 
-    public String getCurrentPath() {
+    public String getCurrentPathStr() {
         return pathField.getText();
     }
 
-    public String getSelectedFileName() {
-        if (checkSelectedItem()) {
+    public String getSelectedFileNameStr() {
+        if (checkSelectedItemNotNull()) {
             return table.getSelectionModel().getSelectedItem().getFileName();
         }
         return null;
     }
 
-    private boolean checkSelectedItem() {
+    protected boolean checkSelectedItemNotNull() {
         return table.isFocused() && table.getSelectionModel() != null && table.getSelectionModel().getSelectedItem() != null;
     }
 
     public Object getSelectedItem() {
-        if (checkSelectedItem()) {
+        if (checkSelectedItemNotNull()) {
             return table.getSelectionModel().getSelectedItem();
         }
         return null;
     }
 
-    private String calculateSize(Long fileSize) {
+    private String sizeToStringFormatter(Long fileSize) {
+        double doubleSize;
+        DecimalFormat decimalFormat = new DecimalFormat( "#.##" );
         if (fileSize < 1024) {
             return fileSize + " B";
         } else if (fileSize < 1024 * 1024) {
-            long sizeInKb = fileSize / 1024;
-            return sizeInKb + " KB";
+            doubleSize = (double) fileSize / 1024;
+            return decimalFormat.format(doubleSize) + " KB";
         } else if (fileSize < 1024 * 1024 * 1024) {
-            long sizeInMb = fileSize / (1024 * 1024);
-            return sizeInMb + " MB";
+            doubleSize = (double) fileSize / (1024 * 1024);
+            return decimalFormat.format(doubleSize) + " MB";
         } else {
-            long sizeInGb = fileSize / (1024 * 1024 * 1024);
-            return sizeInGb + " GB";
+            doubleSize = (double) fileSize / (1024 * 1024 * 1024);
+            return decimalFormat.format(doubleSize) + " GB";
         }
     }
 }

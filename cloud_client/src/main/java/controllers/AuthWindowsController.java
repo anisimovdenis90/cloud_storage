@@ -43,6 +43,9 @@ public class AuthWindowsController implements Initializable {
     private Button logInButton;
 
     @FXML
+    private Button signUpButton;
+
+    @FXML
     private Label signInLabel;
 
     @FXML
@@ -90,6 +93,7 @@ public class AuthWindowsController implements Initializable {
         NetworkClient.getInstance().sendCommandToServer(new SignUpCommand(login, password));
         SignUpCommand command = (SignUpCommand) NetworkClient.getInstance().readCommandFromServer();
         if (command.isSignUp()) {
+            signUpButton.setDisable(true);
             setLabelOk("Регистрация выполнена успешно. Переход на окно авторизации");
             runWithPause(1500, event -> openSignInScreen());
         } else {

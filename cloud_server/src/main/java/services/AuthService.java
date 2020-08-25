@@ -35,7 +35,7 @@ public class AuthService {
         return userID;
     }
 
-    public void setIsLogin(String id, boolean isLogin) {
+    public synchronized void setIsLogin(String id, boolean isLogin) {
         try {
             Connection connection = dbConnector.getConnection();
             PreparedStatement statement = connection.prepareStatement(
@@ -51,7 +51,7 @@ public class AuthService {
         }
     }
 
-    public boolean isLogin(String id) {
+    public synchronized boolean isLogin(String id) {
         try {
             Connection connection = dbConnector.getConnection();
             PreparedStatement statement = connection.prepareStatement(
@@ -70,7 +70,7 @@ public class AuthService {
         return false;
     }
 
-    public boolean checkIsUsedUserId(String login) {
+    public synchronized boolean checkIsUsedUserId(String login) {
         try {
             Connection connection = dbConnector.getConnection();
 
@@ -90,7 +90,7 @@ public class AuthService {
         return true;
     }
 
-    public void registerNewUser(String login, String password) {
+    public synchronized void registerNewUser(String login, String password) {
         try {
             Connection connection = dbConnector.getConnection();
             PreparedStatement statement = connection.prepareStatement(
@@ -106,7 +106,7 @@ public class AuthService {
         }
     }
 
-    private void resetIsLogin() {
+    private synchronized void resetIsLogin() {
         try {
             Connection connection = dbConnector.getConnection();
             PreparedStatement statement = connection.prepareStatement(
