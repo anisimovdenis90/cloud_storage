@@ -134,7 +134,7 @@
                         <Insets right="20.0" />
                      </HBox.margin>
                   </ImageView>
-                  <PasswordField id="passwordText" fx:id="passwordTextRepeat" prefHeight="39.0" prefWidth="255.0" promptText="Введите пароль" style="-fx-background-color: transparent; -fx-border-width: 0px 0px 2px 0px; -fx-border-color: #a0a2ab; -fx-text-fill: #a0a2ab;">
+                  <PasswordField id="passwordText" fx:id="passwordTextRepeat" prefHeight="39.0" prefWidth="255.0" promptText="Повторите пароль" style="-fx-background-color: transparent; -fx-border-width: 0px 0px 2px 0px; -fx-border-color: #a0a2ab; -fx-text-fill: #a0a2ab;">
                      <font>
                         <Font size="14.0" />
                      </font>

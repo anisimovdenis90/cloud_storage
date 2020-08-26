@@ -41,8 +41,8 @@
                               </Label>
                               <HBox alignment="CENTER" prefHeight="45.0" prefWidth="488.0" VBox.vgrow="ALWAYS">
                                  <children>
-                                    <ComboBox fx:id="logicalDisksBox" minWidth="60.0" onAction="#selectDiskAction" prefHeight="42.0" prefWidth="60.0" HBox.hgrow="ALWAYS" />
-                                    <Button fx:id="pathUpButton" alignment="CENTER" mnemonicParsing="false" onAction="#buttonPathUpAction" prefHeight="42.0" prefWidth="42.0" textAlignment="CENTER" HBox.hgrow="ALWAYS">
+                                    <ComboBox fx:id="logicalDisksBox" focusTraversable="false" minWidth="62.0" onAction="#selectDiskAction" prefHeight="42.0" prefWidth="62.0" HBox.hgrow="ALWAYS" />
+                                    <Button fx:id="pathUpButton" alignment="CENTER" focusTraversable="false" mnemonicParsing="false" onAction="#buttonPathUpAction" prefHeight="42.0" prefWidth="42.0" textAlignment="CENTER" HBox.hgrow="ALWAYS">
                                        <graphic>
                                           <ImageView fitHeight="18.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
@@ -52,7 +52,7 @@
                                        </graphic>
                                     </Button>
                                     <TextField fx:id="clientPathField" editable="false" prefHeight="42.0" prefWidth="514.0" HBox.hgrow="ALWAYS" />
-                                    <Button fx:id="refreshButtonClient" mnemonicParsing="false" onAction="#refreshClientFilesList" prefHeight="42.0" prefWidth="42.0" HBox.hgrow="ALWAYS">
+                                    <Button fx:id="refreshButtonClient" focusTraversable="false" mnemonicParsing="false" onAction="#refreshClientFilesList" prefHeight="42.0" prefWidth="42.0" HBox.hgrow="ALWAYS">
                                        <graphic>
                                           <ImageView fitHeight="18.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
@@ -68,7 +68,7 @@
                               </HBox>
                               <TableView fx:id="clientTableView" prefHeight="431.0" prefWidth="700.0" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
                                 <columns>
-                                  <TableColumn fx:id="iconColumnClient" editable="false" maxWidth="50.0" minWidth="25.0" prefWidth="30.0" text="Тип" />
+                                  <TableColumn fx:id="iconColumnClient" editable="false" maxWidth="20.0" minWidth="20.0" prefWidth="20.0" resizable="false" sortable="false" />
                                   <TableColumn fx:id="nameColumnClient" maxWidth="600.0" minWidth="60.0" prefWidth="212.0" text="Имя" />
                                     <TableColumn fx:id="sizeColumnClient" maxWidth="200.0" minWidth="40.0" text="Размер" />
                                     <TableColumn fx:id="dateColumnClient" maxWidth="200.0" minWidth="40.0" prefWidth="152.0" text="Дата изменения" />
@@ -91,7 +91,7 @@
                               </Label>
                               <HBox alignment="CENTER" prefHeight="45.0" prefWidth="445.0" VBox.vgrow="ALWAYS">
                                  <children>
-                                    <Button fx:id="pathUpButtonServer" alignment="CENTER" mnemonicParsing="false" onAction="#buttonPathUpServerAction" prefHeight="42.0" prefWidth="42.0" HBox.hgrow="ALWAYS">
+                                    <Button fx:id="pathUpButtonServer" alignment="CENTER" focusTraversable="false" mnemonicParsing="false" onAction="#buttonPathUpServerAction" prefHeight="42.0" prefWidth="42.0" HBox.hgrow="ALWAYS">
                                        <graphic>
                                           <ImageView fitHeight="18.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
@@ -101,7 +101,7 @@
                                        </graphic>
                                     </Button>
                                     <TextField fx:id="serverPathField" editable="false" prefHeight="42.0" prefWidth="369.0" HBox.hgrow="ALWAYS" />
-                                    <Button fx:id="refreshButtonServer" mnemonicParsing="false" onAction="#refreshServerFilesList" prefHeight="42.0" prefWidth="42.0" HBox.hgrow="ALWAYS">
+                                    <Button fx:id="refreshButtonServer" focusTraversable="false" mnemonicParsing="false" onAction="#refreshServerFilesList" prefHeight="42.0" prefWidth="42.0" HBox.hgrow="ALWAYS">
                                        <graphic>
                                           <ImageView fitHeight="18.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
@@ -114,7 +114,7 @@
                               </HBox>
                               <TableView fx:id="serverTableView" prefHeight="431.0" prefWidth="452.0" tableMenuButtonVisible="true" VBox.vgrow="ALWAYS">
                                 <columns>
-                                  <TableColumn fx:id="iconColumnServer" maxWidth="50.0" minWidth="25.0" prefWidth="28.0" text="Тип" />
+                                  <TableColumn fx:id="iconColumnServer" editable="false" maxWidth="20.0" minWidth="20.0" prefWidth="20.0" resizable="false" sortable="false" />
                                   <TableColumn fx:id="nameColumnServer" maxWidth="600.0" minWidth="50.0" prefWidth="166.0" text="Имя" />
                                     <TableColumn fx:id="sizeColumnServer" maxWidth="200.0" minWidth="30.0" text="Размер" />
                                     <TableColumn fx:id="dateColumnServer" maxWidth="200.0" minWidth="30.0" prefWidth="116.0" text="Дата загрузки" />
@@ -132,7 +132,7 @@
                   </SplitPane>
                   <HBox alignment="CENTER" prefHeight="35.0" prefWidth="984.0" spacing="10.0" VBox.vgrow="ALWAYS">
                      <children>
-                        <Button fx:id="downloadButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#downloadButtonAction" prefHeight="35.0" prefWidth="287.0" style="-fx-background-color: #2196f3;" text="Скачать файл" textFill="WHITE" HBox.hgrow="ALWAYS">
+                        <Button fx:id="downloadButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#downloadButtonAction" prefHeight="35.0" prefWidth="240.0" style="-fx-background-color: #2196f3;" text="Скачать файл" textFill="WHITE" HBox.hgrow="ALWAYS">
                            <font>
                               <Font name="System Bold" size="14.0" />
                            </font>
@@ -144,7 +144,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="uploadButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#uploadButtonAction" prefHeight="35.0" prefWidth="295.0" style="-fx-background-color: #2196f3;" text="Отправить в облако" textFill="WHITE" HBox.hgrow="ALWAYS">
+                        <Button fx:id="uploadButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#uploadButtonAction" prefHeight="35.0" prefWidth="250.0" style="-fx-background-color: #2196f3;" text="Отправить в облако" textFill="WHITE" HBox.hgrow="ALWAYS">
                            <font>
                               <Font name="System Bold" size="14.0" />
                            </font>
@@ -152,6 +152,18 @@
                               <ImageView fitHeight="21.0" fitWidth="23.0" pickOnBounds="true" preserveRatio="true">
                                  <image>
                                     <Image url="@../img/upload_button.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button fx:id="newFolderButton" focusTraversable="false" mnemonicParsing="false" onAction="#createNewDirAction" prefHeight="35.0" prefWidth="230.0" style="-fx-background-color: #2196f3;" text="Создать папку" textFill="WHITE" HBox.hgrow="ALWAYS">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                           <graphic>
+                              <ImageView fitHeight="21.0" fitWidth="21.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../img/new_folder_button.png" />
                                  </image>
                               </ImageView>
                            </graphic>
@@ -231,7 +243,7 @@
                   </VBox>
                   <VBox prefHeight="187.0" prefWidth="1064.0" HBox.hgrow="ALWAYS">
                      <children>
-                        <Label alignment="CENTER" prefHeight="17.0" prefWidth="1199.0" style="-fx-border-color: #a0a2ab;" text="Выполненные операции" textFill="#a0a2ab" VBox.vgrow="ALWAYS">
+                        <Label alignment="CENTER" prefHeight="17.0" prefWidth="1199.0" style="-fx-border-color: #a0a2ab;" text="Очередь операций" textFill="#a0a2ab" VBox.vgrow="ALWAYS">
                            <font>
                               <Font size="14.0" />
                            </font>
@@ -241,12 +253,15 @@
                         </Label>
                         <TableView fx:id="operationTable" editable="true" prefHeight="133.0" prefWidth="912.0" VBox.vgrow="ALWAYS">
                           <columns>
-                            <TableColumn fx:id="operationColumn" maxWidth="150.0" minWidth="60.0" prefWidth="60.0" sortable="false" text="Операция" />
-                            <TableColumn fx:id="infoColumn" maxWidth="200.0" minWidth="70.0" sortable="false" text="Информация" />
-                              <TableColumn fx:id="fileNameColumn" maxWidth="2000.0" minWidth="450.0" prefWidth="500.0" text="Имя файла" />
-                              <TableColumn fx:id="progressColumn" maxWidth="150.0" minWidth="50.0" prefWidth="60.0" sortable="false" text="Прогресс" />
-                              <TableColumn fx:id="goToFileColumn" maxWidth="250.0" minWidth="90.0" prefWidth="100.0" sortable="false" text="Перейти к файлу" />
-                              <TableColumn fx:id="deleteItemColumn" maxWidth="200.0" minWidth="90.0" prefWidth="100.0" sortable="false" text="Удалить запись" />
+                            <TableColumn fx:id="operationColumn" maxWidth="100.0" minWidth="60.0" prefWidth="60.0" sortable="false" text="Операция" />
+                            <TableColumn fx:id="progressColumn" maxWidth="100.0" minWidth="50.0" prefWidth="60.0" sortable="false" text="Прогресс" />
+                              <TableColumn fx:id="fileNameColumn" maxWidth="300.0" minWidth="100.0" prefWidth="100.0" text="Имя файла" />
+                              <TableColumn fx:id="fileSizeColumn" maxWidth="100.0" minWidth="50.0" prefWidth="60.0" sortable="false" text="Размер" />
+                              <TableColumn fx:id="filePathColumn" maxWidth="250.0" minWidth="90.0" prefWidth="100.0" sortable="false" text="Путь" />
+                              <TableColumn fx:id="deleteColumn" maxWidth="200.0" minWidth="90.0" prefWidth="100.0" sortable="false" text="Удалить запись">
+                                 <graphic>
+                                    <Button fx:id="clearQueue" onAction="#clearQueueButtonAction" mnemonicParsing="false" text="Очистить" />
+                                 </graphic></TableColumn>
                           </columns>
                            <VBox.margin>
                               <Insets bottom="20.0" right="20.0" />

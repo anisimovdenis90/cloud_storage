@@ -1,8 +1,20 @@
+.combo-box:hover {
+    -fx-background-color: #90caf9;
+    -fx-border-color: white;
+    -fx-border-radius: 5;
+    -fx-border-width: 2;
+}
+
+.combo-box:pressed {
+    -fx-background-color: #90caf9;
+    -fx-border-color: none;
+}
+
 .button:hover {
     -fx-background-color: #90caf9;
     -fx-border-color: white;
     -fx-border-radius: 5;
-    -fx-border-width: 1;
+    -fx-border-width: 2;
 }
 
 .button:pressed {
@@ -34,6 +46,10 @@
 	-fx-border-width: 1;
 }
 
-#operationColumn, #infoColumn, #goToFileColumn, #deleteItemColumn {
-    -fx-alignment: TOP-CENTER;
+#operationColumn, #infoColumn, #filePathColumn, #deleteColumn, #fileSizeColumn {
+    -fx-alignment: CENTER;
+}
+
+#fileNameColumn {
+    -fx-alignment: CENTER-LEFT;
 }
