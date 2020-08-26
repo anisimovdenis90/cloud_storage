@@ -243,7 +243,7 @@
                   </VBox>
                   <VBox prefHeight="187.0" prefWidth="1064.0" HBox.hgrow="ALWAYS">
                      <children>
-                        <Label alignment="CENTER" prefHeight="17.0" prefWidth="1199.0" style="-fx-border-color: #a0a2ab;" text="Выполненные операции" textFill="#a0a2ab" VBox.vgrow="ALWAYS">
+                        <Label alignment="CENTER" prefHeight="17.0" prefWidth="1199.0" style="-fx-border-color: #a0a2ab;" text="Очередь операций" textFill="#a0a2ab" VBox.vgrow="ALWAYS">
                            <font>
                               <Font size="14.0" />
                            </font>
@@ -253,12 +253,15 @@
                         </Label>
                         <TableView fx:id="operationTable" editable="true" prefHeight="133.0" prefWidth="912.0" VBox.vgrow="ALWAYS">
                           <columns>
-                            <TableColumn fx:id="operationColumn" maxWidth="150.0" minWidth="60.0" prefWidth="60.0" sortable="false" text="Операция" />
-                            <TableColumn fx:id="infoColumn" maxWidth="200.0" minWidth="70.0" sortable="false" text="Информация" />
-                              <TableColumn fx:id="fileNameColumn" maxWidth="2000.0" minWidth="450.0" prefWidth="500.0" text="Имя файла" />
-                              <TableColumn fx:id="progressColumn" maxWidth="150.0" minWidth="50.0" prefWidth="60.0" sortable="false" text="Прогресс" />
-                              <TableColumn fx:id="goToFileColumn" maxWidth="250.0" minWidth="90.0" prefWidth="100.0" sortable="false" text="Перейти к файлу" />
-                              <TableColumn fx:id="deleteItemColumn" maxWidth="200.0" minWidth="90.0" prefWidth="100.0" sortable="false" text="Удалить запись" />
+                            <TableColumn fx:id="operationColumn" maxWidth="100.0" minWidth="60.0" prefWidth="60.0" sortable="false" text="Операция" />
+                            <TableColumn fx:id="progressColumn" maxWidth="100.0" minWidth="50.0" prefWidth="60.0" sortable="false" text="Прогресс" />
+                              <TableColumn fx:id="fileNameColumn" maxWidth="300.0" minWidth="100.0" prefWidth="100.0" text="Имя файла" />
+                              <TableColumn fx:id="fileSizeColumn" maxWidth="100.0" minWidth="50.0" prefWidth="60.0" sortable="false" text="Размер" />
+                              <TableColumn fx:id="filePathColumn" maxWidth="250.0" minWidth="90.0" prefWidth="100.0" sortable="false" text="Путь" />
+                              <TableColumn fx:id="deleteColumn" maxWidth="200.0" minWidth="90.0" prefWidth="100.0" sortable="false" text="Удалить запись">
+                                 <graphic>
+                                    <Button fx:id="clearQueue" onAction="#clearQueueButtonAction" mnemonicParsing="false" text="Очистить" />
+                                 </graphic></TableColumn>
                           </columns>
                            <VBox.margin>
                               <Insets bottom="20.0" right="20.0" />

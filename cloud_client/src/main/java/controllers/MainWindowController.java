@@ -2,6 +2,7 @@ package controllers;
 
 import commands.ErrorCommand;
 import commands.FilesListCommand;
+import commands.FilesListInDirRequest;
 import commands.GetFilesListCommand;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -10,12 +11,14 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import services.NetworkClient;
 import util.FileInfo;
+import util.FileTransfer;
 import util.TransferItem;
 
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -95,24 +98,29 @@ public class MainWindowController implements Initializable {
     private TableView<TransferItem> operationTable;
 
     @FXML
-    private TableColumn<TransferItem, String> operationColumn;
-
-    @FXML
-    private TableColumn<TransferItem, Button> infoColumn;
-
-    @FXML
-    private TableColumn<TransferItem, String> fileNameColumn;
+    private TableColumn<TransferItem, Button> operationColumn;
 
     @FXML
     private TableColumn<TransferItem, ProgressIndicator> progressColumn;
 
     @FXML
-    private TableColumn<TransferItem, Button> goToFileColumn;
+    private TableColumn<TransferItem, String> fileNameColumn;
 
     @FXML
-    private TableColumn<TransferItem, Button> deleteItemColumn;
+    private TableColumn<TransferItem, String> fileSizeColumn;
+
+    @FXML
+    private TableColumn<TransferItem, Button> filePathColumn;
+
+    @FXML
+    private TableColumn<TransferItem, Button> deleteColumn;
+
+    @FXML
+    private Button clearQueue;
 
     private OperationTableController operationTableController;
+
+    private FileTransfer fileTransfer;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -139,17 +147,19 @@ public class MainWindowController implements Initializable {
         operationTableController = new OperationTableController(
                 operationTable,
                 operationColumn,
-                infoColumn,
-                fileNameColumn,
                 progressColumn,
-                goToFileColumn,
-                deleteItemColumn,
+                fileNameColumn,
+                fileSizeColumn,
+                filePathColumn,
+                deleteColumn,
+                clearQueue,
                 this,
                 clientTable,
                 serverTable
         );
         prepareLogicalDisksBox();
         prepareServerTableContent();
+        this.fileTransfer = new FileTransfer(operationTableController, this);
     }
 
     private void setContextMenusToTables() {
@@ -176,6 +186,8 @@ public class MainWindowController implements Initializable {
         uploadItem.setOnAction(event -> {
             if (!uploadButton.isDisabled()) {
                 uploadButtonAction();
+            } else {
+                showInfoAlert("Дождитесь завершения текущей операции", Alert.AlertType.INFORMATION, true);
             }
         });
         renameClientItem.setOnAction(event -> {
@@ -279,7 +291,10 @@ public class MainWindowController implements Initializable {
         clientTable.updateList(Paths.get(element.getSelectionModel().getSelectedItem()));
     }
 
-    private void disableButtons() {
+    public void disableButtons() {
+        serverTableView.setDisable(true);
+        pathUpButtonServer.setDisable(true);
+        refreshButtonServer.setDisable(true);
         renameButton.setDisable(true);
         deleteButton.setDisable(true);
         downloadButton.setDisable(true);
@@ -287,7 +302,10 @@ public class MainWindowController implements Initializable {
         newFolderButton.setDisable(true);
     }
 
-    private void enableButtons() {
+    public void enableButtons() {
+        serverTableView.setDisable(false);
+        pathUpButtonServer.setDisable(false);
+        refreshButtonServer.setDisable(false);
         renameButton.setDisable(false);
         deleteButton.setDisable(false);
         downloadButton.setDisable(false);
@@ -296,74 +314,109 @@ public class MainWindowController implements Initializable {
     }
 
     public void downloadButtonAction() {
-        FileInfo fileInfo = (FileInfo) serverTable.getSelectedItem();
-        if (fileInfo == null || fileInfo.getType() == FileInfo.FileType.DIRECTORY) {
-            String message = "Выберите файл, для скачивания с сервера";
-            showInfoAlert(message, Alert.AlertType.WARNING, true);
+        final FileInfo fileInfo = (FileInfo) serverTable.getSelectedItem();
+        final String currentClientDir = clientTable.getCurrentPathStr();
+        final String currentServerDir = serverTable.getCurrentPathStr();
+        if (fileInfo == null) {
+            showInfoAlert("Выберите файл, для скачивания с сервера", Alert.AlertType.WARNING, true);
             return;
         }
-        Path checkedPath = Paths.get(clientTable.getCurrentPathStr(), fileInfo.getFileName());
-        if (Files.exists(checkedPath)) {
-            if (showConfirmAlert("Файл " + fileInfo.getFileName() + " уже существует, желаете перезаписать?")) {
-                try {
-                    Files.delete(checkedPath);
-                } catch (IOException e) {
-                    showInfoAlert("Невозможно перезаписать файл, " + fileInfo.getFileName() + "нет доступа", Alert.AlertType.WARNING, true);
-                    return;
-                }
-            } else {
+        if (fileInfo.getType().equals(FileInfo.FileType.DIRECTORY)) {
+            Path dir = Paths.get(currentServerDir, fileInfo.getFileName());
+            System.out.println("Отправка запроса на список файлов в папке " + dir);
+            NetworkClient.getInstance().sendCommandToServer(new FilesListInDirRequest(dir.toString()));
+            Object object = NetworkClient.getInstance().readCommandFromServer();
+            if (object instanceof ErrorCommand) {
+                showInfoAlert(((ErrorCommand) object).getErrorMessage(), Alert.AlertType.WARNING, true );
                 return;
             }
+            final FilesListInDirRequest filesListInServerDir = (FilesListInDirRequest) object;
+            System.out.println("Список файлов в папке " + fileInfo.getFileName() + " на сервере получен");
+            final ArrayList<TransferItem> transferList = new ArrayList<>();
+            for (FileInfo file : filesListInServerDir.getFilesList()) {
+                final Path checkedPath = Paths.get(currentClientDir, file.getFileDir(), file.getFileName());
+                if (checkExistsFile(checkedPath)) {
+                    continue;
+                }
+
+                final Path sourcePath = Paths.get(currentServerDir, file.getFileDir(), file.getFileName());
+                final Path destPath = Paths.get(currentClientDir, file.getFileDir());
+
+                System.out.println("Размер " + file.getFileSize());
+                System.out.println(file.getTypeName());
+
+                final TransferItem item = new TransferItem(TransferItem.Operation.DOWNLOAD, sourcePath, destPath);
+                item.setFileSize(file.getFileSize());
+                transferList.add(item);
+            }
+            fileTransfer.addItemToQueue(transferList);
+        } else {
+            final Path checkedPath = Paths.get(clientTable.getCurrentPathStr(), fileInfo.getFileName());
+            if (checkExistsFile(checkedPath)) {
+                return;
+            }
+            final Path sourcePath = Paths.get(currentServerDir, fileInfo.getFileName());
+            final Path destPath = Paths.get(clientTable.getCurrentPathStr());
+            final TransferItem item = new TransferItem(TransferItem.Operation.DOWNLOAD, sourcePath, destPath);
+            item.setFileSize(fileInfo.getFileSize());
+            fileTransfer.addItemToQueue(item);
         }
-        String currentServerDir = serverTable.getCurrentPathStr();
-        Path sourcePath = Paths.get(currentServerDir, fileInfo.getFileName());
-        Path destPath = Paths.get(clientTable.getCurrentPathStr());
+    }
 
-        TransferItem item = new TransferItem(TransferItem.Operation.DOWNLOAD, sourcePath, destPath);
-        operationTableController.updateOperationTable(item);
-
-        NetworkClient.getInstance().getFileFromServer(item, this::refreshClientFilesList);
-        disableButtons();
+    private boolean checkExistsFile(Path filePath) {
+        boolean result = false;
+        if (Files.exists(filePath)) {
+            if (showConfirmAlert("Файл " + filePath.getFileName() + " уже существует, желаете перезаписать?")) {
+                try {
+                    Files.delete(filePath);
+                    result = false;
+                } catch (IOException e) {
+                    showInfoAlert("Невозможно перезаписать файл, " + filePath.getFileName() + "нет доступа", Alert.AlertType.WARNING, true);
+                    return true;
+                }
+            } else {
+                result = true;
+            }
+        }
+        return result;
     }
 
     public void uploadButtonAction() {
-        String errorMessage = "Выберите файл, для отправки на сервер";
-        String fileName = clientTable.getSelectedFileNameStr();
+        final String errorMessage = "Выберите файл, для отправки на сервер";
+        final String errorMessage2 = "Отсутствуют файлы для загрузки на сервер в папке: ";
+
+        final String fileName = clientTable.getSelectedFileNameStr();
         if (fileName == null) {
             showInfoAlert(errorMessage, Alert.AlertType.WARNING, true);
             return;
         }
-        String currentDir = clientTable.getCurrentPathStr();
-        Path sourcePath = Paths.get(currentDir, fileName);
+        final String currentDir = clientTable.getCurrentPathStr();
+        final Path sourcePath = Paths.get(currentDir, fileName);
+        final Path destPath = Paths.get(serverTable.getCurrentPathStr());
         if (Files.isDirectory(sourcePath)) {
-            showInfoAlert(errorMessage, Alert.AlertType.WARNING, true);
-            return;
+            final ArrayList<TransferItem> listToUpload = new ArrayList<>();
+            try {
+                Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                        System.out.println(file.toString());
+                        final Path destination = Paths.get(destPath.toString(), sourcePath.getParent().relativize(file.getParent()).toString());
+                        listToUpload.add(new TransferItem(TransferItem.Operation.UPLOAD, file, destination));
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+                if (listToUpload.size() == 0) {
+                    showInfoAlert(errorMessage2 + sourcePath.getFileName(), Alert.AlertType.WARNING, true);
+                    return;
+                }
+                fileTransfer.addItemToQueue(listToUpload);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            TransferItem item = new TransferItem(TransferItem.Operation.UPLOAD, sourcePath, destPath);
+            fileTransfer.addItemToQueue(item);
         }
-        Path destPath = Paths.get(serverTable.getCurrentPathStr());
-
-        TransferItem item = new TransferItem(TransferItem.Operation.UPLOAD, sourcePath, destPath);
-        operationTableController.updateOperationTable(item);
-
-        NetworkClient.getInstance().sendFileToServer(item, this::refreshServerFilesList);
-        disableButtons();
-    }
-
-    public void refreshServerFilesList(Path destDir) {
-        Platform.runLater(() -> {
-            enableButtons();
-            if (destDir.toString().equals(serverTable.getCurrentPathStr())) {
-                serverTable.updateList(destDir);
-            }
-        });
-    }
-
-    public void refreshClientFilesList(Path destDir) {
-        Platform.runLater(() -> {
-            enableButtons();
-            if (destDir.toString().equals(clientTable.getCurrentPathStr())) {
-                clientTable.updateList(destDir);
-            }
-        });
     }
 
     public Path getSelectedPathFromClientPanel() {
@@ -561,6 +614,10 @@ public class MainWindowController implements Initializable {
     }
 
     public void refreshClientFilesList() {
-        clientTable.updateList(Paths.get(clientTable.getCurrentPathStr()));
+        Platform.runLater(() -> clientTable.updateList(Paths.get(clientTable.getCurrentPathStr())));
+    }
+
+    public void clearQueueButtonAction() {
+        operationTableController.clearOperationTable();
     }
 }

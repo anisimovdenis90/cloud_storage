@@ -18,12 +18,6 @@ import static javafx.embed.swing.SwingFXUtils.toFXImage;
 
 public class FileInfo implements Serializable {
 
-//    @Override
-//    public int compareTo(FileInfo o) {
-//        int compareByFileType = this.getTypeName().compareTo(o.getTypeName());
-//        return compareByFileType != 0 ? compareByFileType : this.getFileName().compareTo(o.getFileName());
-//    }
-
     public enum FileType {
         FILE("F"),
         DIRECTORY("D");
@@ -46,6 +40,7 @@ public class FileInfo implements Serializable {
     private String fileName;
     private long fileSize;
     private final String lastModified;
+    private String fileDir;
 
     public FileInfo(Path path, boolean needIcon) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -64,7 +59,7 @@ public class FileInfo implements Serializable {
             this.typeName = type.getName();
             this.lastModified = LocalDateTime.ofInstant(Files.getLastModifiedTime(path).toInstant(), ZoneOffset.ofHours(3)).format(dtf);
         } catch (IOException e) {
-            throw new RuntimeException("Невозможно создать список файлов из папки" + path.toString());
+            throw new RuntimeException("Невозможно создать список файлов из папки " + path.toString());
         }
     }
 
@@ -74,6 +69,14 @@ public class FileInfo implements Serializable {
         final BufferedImage bimg = (BufferedImage) img;
         final Image imgfx = toFXImage(bimg,null);
         return new ImageView(imgfx);
+    }
+
+    public void setFileDir(String fileDir) {
+        this.fileDir = fileDir;
+    }
+
+    public String getFileDir() {
+        return fileDir;
     }
 
     public ImageView getFileIcon() {

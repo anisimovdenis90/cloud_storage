@@ -3,6 +3,7 @@ package netty.handlers;
 import commands.*;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import javafx.scene.control.Alert;
 import services.AuthService;
 import util.FileInfo;
 
@@ -11,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -26,6 +28,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     private String currentClientDir;
 
     private FileOutputStream fileWriter;
+    private Path wroteFilePath;
 
     public ClientHandler(AuthService authService, String userId, String serverDir) {
         this.authService = authService;
@@ -40,7 +43,21 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) {
         System.out.printf("Клиент отключился по адресу %s%n", ctx.channel().remoteAddress().toString());
         authService.setIsLogin(userId, false);
+        System.out.println("Выполнено отключение клиента");
+        checkFileWriter();
         ctx.close();
+    }
+
+    private void checkFileWriter() {
+        try {
+            if (fileWriter != null) {
+                fileWriter.close();
+                System.out.println("Удаление частично полученного файла от клиента " + wroteFilePath);
+                Files.delete(wroteFilePath);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -68,8 +85,41 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             createNewFolder(ctx, (CreateFolderCommand) msg);
         } else if (msg instanceof GetFilesListCommand) {
             sendFilesListToClient(ctx, (GetFilesListCommand) msg);
+        } else if (msg instanceof FilesListInDirRequest) {
+            sendFilesListInSelectDir(ctx, (FilesListInDirRequest) msg);
         } else {
             System.out.printf("Получен неизвестный объект %s от клиента %s%n", msg.toString(), userId);
+        }
+    }
+
+    private void sendFilesListInSelectDir(ChannelHandlerContext ctx, FilesListInDirRequest command) {
+        System.out.println("Запрос на список файлов в папке: " + command.getServerPath());
+        Path dirPath = Paths.get(serverDir, command.getServerPath());
+        try {
+            final ArrayList<FileInfo> list = new ArrayList<>();
+            Files.walkFileTree(dirPath, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                    System.out.println(file.toString());
+                    final Path fileDirPath = Paths.get(dirPath.getFileName().toString(), dirPath.relativize(file.getParent()).toString());
+                    System.out.println("Полученный путь: " + fileDirPath);
+                    final FileInfo fileInfo = new FileInfo(file, false);
+                    fileInfo.setFileDir(fileDirPath.toString());
+                    list.add(fileInfo);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+            if (list.size() == 0) {
+                ctx.writeAndFlush(new ErrorCommand("Отсутствуют файла для скачивания в папке " + command.getServerPath() + " на сервере"));
+            } else {
+                command.setFilesList(list);
+                ctx.writeAndFlush(command);
+                System.out.println("Список файлов в папке: " + dirPath + " успешно отправлен");
+            }
+        } catch (IOException e) {
+            System.out.println("Ошибка получения списка файлов в папке: " + dirPath);
+            ctx.writeAndFlush(new ErrorCommand("Ошибка получения списка файлов в папке: " + command.getServerPath() + " на сервере"));
+            e.printStackTrace();
         }
     }
 
@@ -105,6 +155,24 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+    private void deleteFile(ChannelHandlerContext ctx, DeleteFileCommand command) {
+        System.out.printf("Команда на удаление файла %s от клиента %s%n", command.getFileName(), userId);
+        Path deletePath = Paths.get(serverDir, command.getFileName());
+        if (Files.isDirectory(deletePath)) {
+            deleteDirectory(ctx, deletePath);
+        } else {
+            try {
+                Files.delete(deletePath);
+                ctx.writeAndFlush(new MessageCommand("Файл " + deletePath.getFileName() + " успешно удален с сервера"));
+                System.out.println("Файл " + deletePath.getFileName() + " успешно удален с сервера");
+            } catch (IOException e) {
+                System.out.println("Ошибка удаления файла с сервера " + command.getFileName());
+                ctx.writeAndFlush(new ErrorCommand("Невозможно удалить файл " + deletePath.getFileName() + " с сервера, попробуйте повторить позже."));
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void deleteDirectory(ChannelHandlerContext ctx, Path deletePath) {
         try {
             Files.walkFileTree(deletePath, new SimpleFileVisitor<Path>() {
@@ -127,24 +195,6 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             System.out.println("Ошибка удаления папки " + deletePath);
             ctx.writeAndFlush(new ErrorCommand("Невозможно удалить папку " + deletePath.getFileName() + " с сервера, попробуйте повторить позже."));
             e.printStackTrace();
-        }
-    }
-
-    private void deleteFile(ChannelHandlerContext ctx, DeleteFileCommand command) {
-        System.out.printf("Команда на удаление файла %s от клиента %s%n", command.getFileName(), userId);
-        Path deletePath = Paths.get(serverDir, command.getFileName());
-        if (Files.isDirectory(deletePath)) {
-            deleteDirectory(ctx, deletePath);
-        } else {
-            try {
-                Files.delete(deletePath);
-                ctx.writeAndFlush(new MessageCommand("Файл " + deletePath.getFileName() + " успешно удален с сервера"));
-                System.out.println("Файл " + deletePath.getFileName() + " успешно удален с сервера");
-            } catch (IOException e) {
-                System.out.println("Ошибка удаления файла с сервера " + command.getFileName());
-                ctx.writeAndFlush(new ErrorCommand("Невозможно удалить файл " + deletePath.getFileName() + " с сервера, попробуйте повторить позже."));
-                e.printStackTrace();
-            }
         }
     }
 
@@ -192,9 +242,11 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                 System.out.println("Абсолютный путь загрузки " + destPath);
             }
             fileWriter.write(command.getData());
+            System.out.println("Получена часть " + command.getPartNumber() + " из " + command.getPartsOfFile());
             if (command.getPartNumber() == command.getPartsOfFile()) {
                 fileWriter.close();
                 fileWriter = null;
+                wroteFilePath = null;
                 System.out.printf("Файл %s успешно загружен на сервер от клиента %s%n", command.getFileName(), userId);
             }
         } catch (IOException e) {
@@ -205,7 +257,9 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 
     private void createFileWriter(Path destPath) {
         try {
+            Files.createDirectories(destPath.getParent());
             fileWriter = new FileOutputStream(destPath.toFile(), true);
+            wroteFilePath = destPath;
         } catch (IOException e) {
             System.out.printf("Невозможно начать запись файла %s на диск%n", destPath);
             e.printStackTrace();
@@ -213,12 +267,12 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void sendFileToClient(ChannelHandlerContext ctx, FileRequestCommand command) {
-        System.out.printf("Начало передачи файла %s клиенту %s%n", command.getFileToDownload(), userId);
         new Thread(() -> {
             final Path fileToSend = Paths.get(serverDir, command.getFileToDownload());
+            System.out.printf("Начало передачи файла %s клиенту %s%n", fileToSend, userId);
             final long fileSize = fileToSend.toFile().length();
             long partsOfFile = fileSize / DEFAULT_BUFFER_SIZE;
-            if (fileToSend.toFile().length() % DEFAULT_BUFFER_SIZE != 0) {
+            if (fileToSend.toFile().length() % DEFAULT_BUFFER_SIZE != 0 || fileSize == 0) {
                 partsOfFile++;
             }
             System.out.printf("Размер файла %d, количество пакетов %d при размере буфера %d%n", fileSize, partsOfFile, DEFAULT_BUFFER_SIZE);
@@ -237,13 +291,15 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                     readBytes = fileReader.read(fileToClientCommand.getData());
                     fileToClientCommand.setPartNumber(partsSend + 1);
                     if (readBytes < DEFAULT_BUFFER_SIZE) {
-                        fileToClientCommand.setData(Arrays.copyOfRange(fileToClientCommand.getData(), 0, readBytes));
+                        fileToClientCommand.setData(Arrays.copyOfRange(fileToClientCommand.getData(), 0, Math.max(readBytes, 0)));
                     }
                     ctx.writeAndFlush(fileToClientCommand);
                     partsSend++;
+                    System.out.println("Отправлена часть " + partsSend + " из " + partsOfFile);
+                    Thread.sleep(10);
                 } while (partsSend != partsOfFile);
                 System.out.printf("Файл %s успешно передан клиенту %s%n", command.getFileToDownload(), userId);
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 System.out.printf("Ошибка передачи файла %s клиенту %s%n", command.getFileToDownload(), userId);
                 e.printStackTrace();
             }

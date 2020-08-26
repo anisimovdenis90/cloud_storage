@@ -3,24 +3,16 @@ package services;
 import commands.*;
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
-import javafx.application.Platform;
-import util.FinishedCallBack;
-import util.TransferItem;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.function.Consumer;
 
 public class NetworkClient {
 
     private static final String DEFAULT_SERVER_ADDRESS = "localhost";
     private static final int DEFAULT_PORT = 8189;
-    private static final int DEFAULT_BUFFER_SIZE = 1024 * 1024 * 10;
 
     private static NetworkClient instance;
     private static ObjectEncoderOutputStream out;
@@ -78,80 +70,6 @@ public class NetworkClient {
             System.out.printf("Ошибка отправки команды %s на сервер%n", command.toString());
             e.printStackTrace();
         }
-    }
-
-    public void getFileFromServer(TransferItem transferItem, FinishedCallBack callBack) {
-        sendCommandToServer(new FileRequestCommand(transferItem.getSourceFile().toString()));
-        new Thread(() -> {
-            try {
-                FileOutputStream fileWriter = new FileOutputStream(transferItem.getDstFile() + "/" + transferItem.getSourceFile().getFileName(),
-                        true
-                );
-                while (true) {
-                    FileMessageCommand command = (FileMessageCommand) in.readObject();
-                    final long totalPartsProgress = command.getPartsOfFile();
-                    final long actualPart = command.getPartNumber();
-                    fileWriter.write(command.getData());
-                    Platform.runLater(() -> transferItem.setProgressIndicator((double) actualPart / totalPartsProgress));
-                    if (command.getPartNumber() == command.getPartsOfFile()) {
-                        break;
-                    }
-                }
-                System.out.printf("Файл %s успешно скачен с сервера%n", transferItem.getSourceFile());
-                fileWriter.close();
-                transferItem.setSuccess(true);
-                transferItem.enableButtons();
-                callBack.call(transferItem.getDstFile());
-            } catch (IOException | ClassNotFoundException e) {
-                transferItem.setSuccess(false);
-                System.out.printf("Ошибка скачивания файла %s с сервера%n", transferItem.getSourceFile());
-                e.printStackTrace();
-            }
-        }).start();
-    }
-
-    public void sendFileToServer(TransferItem transferItem, Consumer<Path> callBack) {
-        new Thread(() -> {
-            System.out.println("Начало передачи файла " + transferItem.getSourceFile() + " на сервер");
-            final long fileSize = transferItem.getSourceFile().toFile().length();
-            long partsOfFile = fileSize / DEFAULT_BUFFER_SIZE;
-            if (fileSize % DEFAULT_BUFFER_SIZE != 0) {
-                partsOfFile++;
-            }
-            System.out.println("Размер файла " + fileSize + "  Количество частей " + partsOfFile);
-            final long totalPartsProgress = partsOfFile;
-            FileMessageCommand fileToServerCommand = new FileMessageCommand(
-                    transferItem.getSourceFile().getFileName().toString(),
-                    transferItem.getDstFile().toString(),
-                    fileSize,
-                    partsOfFile,
-                    0,
-                    new byte[DEFAULT_BUFFER_SIZE]
-            );
-            try (FileInputStream fileReader = new FileInputStream(transferItem.getSourceFile().toFile())) {
-                int readBytes;
-                long partsSend = 0;
-                do {
-                    readBytes = fileReader.read(fileToServerCommand.getData());
-                    fileToServerCommand.setPartNumber(partsSend + 1);
-                    if (readBytes < DEFAULT_BUFFER_SIZE) {
-                        fileToServerCommand.setData(Arrays.copyOfRange(fileToServerCommand.getData(), 0, readBytes));
-                    }
-                    out.writeObject(fileToServerCommand);
-                    partsSend++;
-                    final long actualPart = partsSend;
-                    Platform.runLater(() -> transferItem.setProgressIndicator((double) actualPart / totalPartsProgress));
-                } while (partsSend != partsOfFile);
-                System.out.printf("Файл %s успешно отправлен на сервер%n", transferItem.getSourceFile());
-                transferItem.setSuccess(true);
-                transferItem.enableButtons();
-                callBack.accept(transferItem.getDstFile());
-            } catch (IOException e) {
-                transferItem.setSuccess(false);
-                System.out.printf("Ошибка отправки файла %s на сервер%n", transferItem.getSourceFile());
-                e.printStackTrace();
-            }
-        }).start();
     }
 
     public void deleteFileFromServer(Path fileName) {

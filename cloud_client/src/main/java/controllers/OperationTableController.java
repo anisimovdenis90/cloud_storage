@@ -1,42 +1,47 @@
 package controllers;
 
-import javafx.collections.ListChangeListener;
+import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import util.TransferItem;
 
+import java.util.List;
+
 public class OperationTableController {
 
-    protected TableView<TransferItem> operationTable;
-    protected TableColumn<TransferItem, String> operationColumn;
-    protected TableColumn<TransferItem, Button> infoColumn;
-    protected TableColumn<TransferItem, String> fileNameColumn;
-    protected TableColumn<TransferItem, ProgressIndicator> progressColumn;
-    protected TableColumn<TransferItem, Button> goToFileColumn;
-    protected TableColumn<TransferItem, Button> deleteItemColumn;
+    private final TableView<TransferItem> operationTable;
+    private final TableColumn<TransferItem, Button> operationColumn;
+    private final TableColumn<TransferItem, ProgressIndicator> progressColumn;
+    private final TableColumn<TransferItem, String> fileNameColumn;
+    private final TableColumn<TransferItem, String> fileSizeColumn;
+    private final TableColumn<TransferItem, Button> filePathColumn;
+    private final TableColumn<TransferItem, Button> deleteColumn;
+    private final Button clearQueue;
 
     private final MainWindowController mainWindowController;
     private final ClientPanelController clientPanel;
     private final ServerPanelController serverPanel;
 
     public OperationTableController(TableView<TransferItem> operationTable,
-                                    TableColumn<TransferItem, String> operationColumn,
-                                    TableColumn<TransferItem, Button> infoColumn,
-                                    TableColumn<TransferItem, String> fileNameColumn,
+                                    TableColumn<TransferItem, Button> operationColumn,
                                     TableColumn<TransferItem, ProgressIndicator> progressColumn,
-                                    TableColumn<TransferItem, Button> goToFileColumn,
-                                    TableColumn<TransferItem, Button> deleteItemColumn,
+                                    TableColumn<TransferItem, String> fileNameColumn,
+                                    TableColumn<TransferItem, String> fileSizeColumn,
+                                    TableColumn<TransferItem, Button> filePathColumn,
+                                    TableColumn<TransferItem, Button> deleteColumn,
+                                    Button clearQueue,
                                     MainWindowController mainWindowController,
                                     ClientPanelController clientPanel,
                                     ServerPanelController serverPanel
     ) {
         this.operationTable = operationTable;
         this.operationColumn = operationColumn;
-        this.infoColumn = infoColumn;
-        this.fileNameColumn = fileNameColumn;
         this.progressColumn = progressColumn;
-        this.goToFileColumn = goToFileColumn;
-        this.deleteItemColumn = deleteItemColumn;
+        this.fileNameColumn = fileNameColumn;
+        this.fileSizeColumn = fileSizeColumn;
+        this.filePathColumn = filePathColumn;
+        this.deleteColumn = deleteColumn;
+        this.clearQueue = clearQueue;
         this.mainWindowController = mainWindowController;
         this.clientPanel = clientPanel;
         this.serverPanel = serverPanel;
@@ -44,31 +49,51 @@ public class OperationTableController {
     }
 
     private void initialize() {
-        operationColumn.setCellValueFactory(new PropertyValueFactory<>("operationImage"));
-        infoColumn.setCellValueFactory(new PropertyValueFactory<>("infoButton"));
-        fileNameColumn.setCellValueFactory(new PropertyValueFactory<>("fileName"));
+        operationColumn.setCellValueFactory(new PropertyValueFactory<>("operationButton"));
         progressColumn.setCellValueFactory(new PropertyValueFactory<>("progressIndicator"));
-        goToFileColumn.setCellValueFactory(new PropertyValueFactory<>("goToFileButton"));
-        deleteItemColumn.setCellValueFactory(new PropertyValueFactory<>("deleteItemButton"));
+        fileNameColumn.setCellValueFactory(new PropertyValueFactory<>("fileName"));
+        fileSizeColumn.setCellValueFactory(new PropertyValueFactory<>("fileSize"));
+        filePathColumn.setCellValueFactory(new PropertyValueFactory<>("filePathButton"));
+        deleteColumn.setCellValueFactory(new PropertyValueFactory<>("deleteItemButton"));
         operationTable.setPlaceholder(new Label("Отсутствуют элементы для отображения"));
-        addAutoScroll();
-    }
 
-    private void addAutoScroll() {
-        operationTable.getItems().addListener((ListChangeListener<TransferItem>) c -> {
-            c.next();
-            final int size = operationTable.getItems().size();
-            if (size > 0) {
-                operationTable.scrollTo(size - 1);
+        clearQueue.setTooltip(new Tooltip("Очистить очередь операций"));
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem clearAllItems = new MenuItem("Очистить очередь");
+        clearAllItems.setOnAction(event -> {
+            if(!clearQueue.isDisabled()) {
+                clearOperationTable();
             }
         });
+        contextMenu.getItems().add(clearAllItems);
+        operationTable.setContextMenu(contextMenu);
+    }
+
+    public void clearOperationTable() {
+        Platform.runLater(() -> operationTable.getItems().clear());
+    }
+
+    public void disableButtons() {
+        clearQueue.setDisable(true);
+    }
+
+    public void enableButtons() {
+        clearQueue.setDisable(false);
+    }
+
+    public void scrollToElement(TransferItem scrollToItem) {
+        Platform.runLater(() -> operationTable.scrollTo(scrollToItem));
     }
 
     public void updateOperationTable(TransferItem item) {
         setDeleteItemButtonAction(item);
-        setGoToFileButtonAction(item);
-        setInfoButtonAction(item);
+        setGoToFilePathButtonAction(item);
+        setOperationButtonAction(item);
         operationTable.getItems().add(item);
+    }
+
+    public void updateOperationTable(List<TransferItem> list) {
+        Platform.runLater(() -> list.forEach(this::updateOperationTable));
     }
 
     private void setDeleteItemButtonAction(TransferItem item) {
@@ -76,31 +101,32 @@ public class OperationTableController {
         item.getDeleteItemButton().setTooltip(new Tooltip("Удалить из истории"));
     }
 
-    private void setInfoButtonAction(TransferItem item) {
-        item.getInfoButton().setOnAction(event -> {
+    private void setOperationButtonAction(TransferItem item) {
+        item.getOperationButton().setOnAction(event -> {
             if (item.isSuccess()) {
                 String message;
                 if (item.getOperation().equals(TransferItem.Operation.DOWNLOAD)) {
-                    message = "Файл " + item.getSourceFile().getFileName() + " успешно скачен с сервера в папку " + item.getDstFile();
+                    message = "Файл " + item.getSourcePath().getFileName() + " успешно скачен с сервера в папку " + item.getDstPath();
                 } else {
-                    message = "Файл " + item.getSourceFile().getFileName() + " успешно загружен на сервер в папку " + item.getDstFile();
+                    message = "Файл " + item.getSourcePath().getFileName() + " успешно загружен на сервер в папку " + item.getDstPath();
                 }
                 mainWindowController.showInfoAlert(message, Alert.AlertType.INFORMATION, false);
             } else {
                 mainWindowController.showInfoAlert("Ошибка передачи файла " + item.getFileName(), Alert.AlertType.INFORMATION, false);
             }
         });
-        item.getInfoButton().setTooltip(new Tooltip("Информация об операции"));
+        item.getOperationButton().setTooltip(new Tooltip("Информация об операции"));
     }
 
-    private void setGoToFileButtonAction(TransferItem item) {
-        item.getGoToFileButton().setOnAction(event -> {
+    private void setGoToFilePathButtonAction(TransferItem item) {
+        item.getFilePathButton().setOnAction(event -> {
+
             if (item.getOperation().equals(TransferItem.Operation.DOWNLOAD)) {
-                clientPanel.updateList(item.getDstFile());
+                clientPanel.updateList(item.getDstPath());
             } else if (item.getOperation().equals(TransferItem.Operation.UPLOAD)) {
-                serverPanel.updateList(item.getDstFile());
+                serverPanel.updateList(item.getDstPath());
             }
         });
-        item.getGoToFileButton().setTooltip(new Tooltip("Перейти в каталог с файлом"));
+        item.getFilePathButton().setTooltip(new Tooltip("Перейти в каталог с файлом"));
     }
 }

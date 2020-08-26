@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ClientPanelController extends PanelController {
@@ -48,10 +49,17 @@ public class ClientPanelController extends PanelController {
                         return false;
                     })
                     .map((Path path1) -> new FileInfo(path1, true))
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toList())
+            );
+            table.sort();
         } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.WARNING, "Не удалось обновить список файлов", ButtonType.OK);
-            alert.showAndWait();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "");
+            alert.setTitle("Подтверждение операции");
+            alert.setHeaderText("Не удалось обновить список файлов по текущему пути. Желаете перейти на каталог выше?");
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                updateList(path.getParent());
+            }
 //            e.printStackTrace();
         }
     }

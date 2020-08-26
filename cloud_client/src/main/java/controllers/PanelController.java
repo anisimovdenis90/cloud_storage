@@ -1,20 +1,13 @@
 package controllers;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.util.Callback;
 import util.FileInfo;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
-import java.util.Comparator;
 
 public abstract class PanelController {
 
@@ -54,6 +47,14 @@ public abstract class PanelController {
         fileSizeColumn.setCellValueFactory(new PropertyValueFactory<>("fileSize"));
         fileDateColumn.setCellValueFactory(new PropertyValueFactory<>("lastModified"));
 
+        table.setOnSort(event -> {
+            if (!table.getSortOrder().contains(fileNameColumn)) {
+                table.getSortOrder().add(fileNameColumn);
+            } else if (!table.getSortOrder().contains(fileSizeColumn)) {
+                table.getSortOrder().add(fileSizeColumn);
+            }
+        });
+
         fileSizeColumn.setCellFactory(column -> new TableCell<FileInfo, Long>() {
             @Override
             protected void updateItem(Long item, boolean empty) {
@@ -70,6 +71,9 @@ public abstract class PanelController {
             }
         });
         table.setPlaceholder(new Label("Отсутствуют файлы для отображения"));
+        table.getSortOrder().add(fileNameColumn);
+        table.getSortOrder().add(fileSizeColumn);
+        table.sort();
         setMouseOnTableAction();
     }
 

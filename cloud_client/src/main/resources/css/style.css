@@ -46,7 +46,7 @@
 	-fx-border-width: 1;
 }
 
-#operationColumn, #infoColumn, #goToFileColumn, #deleteItemColumn {
+#operationColumn, #infoColumn, #filePathColumn, #deleteColumn, #fileSizeColumn {
     -fx-alignment: CENTER;
 }
 

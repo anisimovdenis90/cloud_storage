@@ -3,6 +3,7 @@ package controllers;
 import commands.ErrorCommand;
 import commands.FilesListCommand;
 import commands.GetFilesListCommand;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -13,7 +14,6 @@ import util.FileInfo;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class ServerPanelController extends PanelController {
 
@@ -38,19 +38,30 @@ public class ServerPanelController extends PanelController {
     public void updateList(Path path) {
         NetworkClient.getInstance().sendCommandToServer(new GetFilesListCommand(path));
         System.out.println("Запрос на список файлов отправлен на сервер");
-        Object receivedCommand = NetworkClient.getInstance().readCommandFromServer();
+        final Object receivedCommand = NetworkClient.getInstance().readCommandFromServer();
         if (receivedCommand instanceof FilesListCommand) {
             System.out.println("Список файлов получен");
-            FilesListCommand command = (FilesListCommand) receivedCommand;
-            pathField.setText(command.getCurrentServerPath());
-            table.getItems().clear();
-            table.getItems().addAll(setFileIconFromImage(command.getFilesList()));
-            table.sort();
+            final FilesListCommand command = (FilesListCommand) receivedCommand;
+            Platform.runLater(() -> {
+                pathField.setText(command.getCurrentServerPath());
+                table.getItems().clear();
+                table.getItems().addAll(setFileIconFromImage(command.getFilesList()));
+                table.sort();
+            });
         } else if (receivedCommand instanceof ErrorCommand) {
             String message = ((ErrorCommand) receivedCommand).getErrorMessage();
             Alert alert = new Alert(Alert.AlertType.WARNING, message, ButtonType.OK);
             alert.showAndWait();
         }
+    }
+
+    public void updateList(List<FileInfo> filesList) {
+        Platform.runLater(() -> {
+            pathField.setText(rootPath.toString());
+            table.getItems().clear();
+            table.getItems().addAll(setFileIconFromImage(filesList));
+            table.sort();
+        });
     }
 
     private List<FileInfo> setFileIconFromImage(List<FileInfo> list) {
@@ -64,13 +75,6 @@ public class ServerPanelController extends PanelController {
             }
         });
         return list;
-    }
-
-    public void updateList(List<FileInfo> filesList) {
-        pathField.setText(rootPath.toString());
-        table.getItems().clear();
-        table.getItems().addAll(setFileIconFromImage(filesList));
-        table.sort();
     }
 
     @Override
