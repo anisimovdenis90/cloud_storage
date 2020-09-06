@@ -1,6 +1,9 @@
 package services;
 
-import commands.*;
+import commands.CreateFolderCommand;
+import commands.DeleteFileCommand;
+import commands.RenameFileCommand;
+import controllers.AuthWindowsController;
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
 
@@ -19,7 +22,10 @@ public class NetworkClient {
     private static ObjectDecoderInputStream in;
     private Socket socket;
     private String userId;
+
+    private volatile AuthWindowsController authWindowsController;
     private volatile boolean connectionSuccess = false;
+    private Thread repeatConnectionThread = null;
 
     private NetworkClient() {
 
@@ -30,6 +36,10 @@ public class NetworkClient {
             instance = new NetworkClient();
         }
         return instance;
+    }
+
+    public void setAuthWindowsController(AuthWindowsController authWindowsController) {
+        this.authWindowsController = authWindowsController;
     }
 
     public String getUserId() {
@@ -48,8 +58,32 @@ public class NetworkClient {
             connectionSuccess = true;
             System.out.println("Соединение с сервером установленно");
         } catch (IOException e) {
+            connectionSuccess = false;
+            repeatConnection();
             System.out.println("Ошибка связи с сервером.");
             e.printStackTrace();
+        }
+    }
+
+    private void repeatConnection() {
+        if (repeatConnectionThread == null || repeatConnectionThread.getState().equals(Thread.State.TERMINATED)) {
+            repeatConnectionThread = new Thread(() -> {
+                final int counts = 10;
+                while (!connectionSuccess) {
+                    for (int i = 0; i < counts; i++) {
+                        try {
+                            authWindowsController.setLabelError("Отсутствует связь с сервером, повторное подключение через " + (counts - i) + "...");
+                            Thread.sleep(1000);
+                        } catch (InterruptedException interruptedException) {
+                            interruptedException.printStackTrace();
+                        }
+                    }
+                    start();
+                }
+                authWindowsController.setLabelOk("Подключение к серверу установлено");
+            });
+            repeatConnectionThread.setDaemon(true);
+            repeatConnectionThread.start();
         }
     }
 

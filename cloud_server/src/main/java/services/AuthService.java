@@ -7,23 +7,36 @@ import java.sql.SQLException;
 
 public class AuthService {
 
-    private final DBConnector dbConnector;
+    private static AuthService instance;
 
-    public AuthService(DBConnector dbConnector) {
+    private DBConnector dbConnector;
+
+    private AuthService() {
+
+    }
+
+    public static AuthService getInstance() {
+        if (instance == null) {
+            instance = new AuthService();
+        }
+        return instance;
+    }
+
+    public void start(DBConnector dbConnector) {
         this.dbConnector = dbConnector;
         resetIsLogin();
     }
 
-    public synchronized String getUserIDByLoginAndPassword(String login, String password) {
+    public String getUserIDByLoginAndPassword(String login, String password) {
         String userID = null;
         try {
-            Connection connection = dbConnector.getConnection();
-            PreparedStatement statement = connection.prepareStatement(
+            final Connection connection = dbConnector.getConnection();
+            final PreparedStatement statement = connection.prepareStatement(
                     "SELECT id FROM users WHERE login = ? AND password = ?"
             );
             statement.setString(1, login);
             statement.setString(2, password);
-            ResultSet resultSet = statement.executeQuery();
+            final ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 userID = resultSet.getString("id");
             }
@@ -37,8 +50,8 @@ public class AuthService {
 
     public synchronized void setIsLogin(String id, boolean isLogin) {
         try {
-            Connection connection = dbConnector.getConnection();
-            PreparedStatement statement = connection.prepareStatement(
+            final Connection connection = dbConnector.getConnection();
+            final PreparedStatement statement = connection.prepareStatement(
                     "UPDATE users SET isLogin = ? WHERE id = ?"
             );
             statement.setInt(1, isLogin ? 1 : 0);
@@ -51,14 +64,14 @@ public class AuthService {
         }
     }
 
-    public synchronized boolean isLogin(String id) {
+    public boolean isLogin(String id) {
         try {
-            Connection connection = dbConnector.getConnection();
-            PreparedStatement statement = connection.prepareStatement(
+            final Connection connection = dbConnector.getConnection();
+            final PreparedStatement statement = connection.prepareStatement(
                     "SELECT login FROM users WHERE id = ? AND isLogin = 1"
             );
             statement.setString(1, id);
-            ResultSet resultSet = statement.executeQuery();
+            final ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 return true;
             }
@@ -70,15 +83,14 @@ public class AuthService {
         return false;
     }
 
-    public synchronized boolean checkIsUsedUserId(String login) {
+    public boolean checkIsUsedUserId(String login) {
         try {
-            Connection connection = dbConnector.getConnection();
-
-            PreparedStatement statement = connection.prepareStatement(
+            final Connection connection = dbConnector.getConnection();
+            final PreparedStatement statement = connection.prepareStatement(
                     "SELECT id FROM users WHERE login = ?"
             );
             statement.setString(1, login);
-            ResultSet resultSet = statement.executeQuery();
+            final ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 return false;
             }
@@ -92,8 +104,8 @@ public class AuthService {
 
     public synchronized void registerNewUser(String login, String password) {
         try {
-            Connection connection = dbConnector.getConnection();
-            PreparedStatement statement = connection.prepareStatement(
+            final Connection connection = dbConnector.getConnection();
+            final PreparedStatement statement = connection.prepareStatement(
                     "INSERT INTO users (login, password) VALUES (?, ?)"
             );
             statement.setString(1, login);
@@ -108,8 +120,8 @@ public class AuthService {
 
     private synchronized void resetIsLogin() {
         try {
-            Connection connection = dbConnector.getConnection();
-            PreparedStatement statement = connection.prepareStatement(
+            final Connection connection = dbConnector.getConnection();
+            final PreparedStatement statement = connection.prepareStatement(
                     "UPDATE users SET isLogin = 0"
             );
             statement.execute();

@@ -8,13 +8,10 @@ import services.AuthService;
 
 public class AuthHandler extends ChannelInboundHandlerAdapter {
 
-    private static final boolean authOk = false;
     private final String serverDir;
-    private final AuthService authService;
     private String userId;
 
-    public AuthHandler(AuthService authService, String serverDir) {
-        this.authService = authService;
+    public AuthHandler(String serverDir) {
         this.serverDir = serverDir;
     }
 
@@ -26,7 +23,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         System.out.printf("Клиент отключился по адресу %s%n", ctx.channel().remoteAddress().toString());
-        authService.setIsLogin(userId, false);
+        AuthService.getInstance().setIsLogin(userId, false);
         ctx.close();
     }
 
@@ -43,9 +40,9 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
 
     private void signUpProcessing(ChannelHandlerContext ctx, SignUpCommand command) {
         String login = command.getLogin();
-        if (authService.checkIsUsedUserId(login)) {
+        if (AuthService.getInstance().checkIsUsedUserId(login)) {
             String password = command.getPassword();
-            authService.registerNewUser(login, password);
+            AuthService.getInstance().registerNewUser(login, password);
             command.setSignUp(true);
         } else {
             command.setMessage("Указанный логин уже используется");
@@ -56,7 +53,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     private void authProcessing(ChannelHandlerContext ctx, AuthCommand command) {
         String login = command.getLogin();
         String password = command.getPassword();
-        userId = authService.getUserIDByLoginAndPassword(login, password);
+        userId = AuthService.getInstance().getUserIDByLoginAndPassword(login, password);
         if (userId != null) {
             if (checkAlreadyLogin(userId)) {
                 command.setMessage("Клиент с таким логином уже авторизован");
@@ -65,8 +62,9 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
             }
             command.setAuthorized(true);
             command.setUserID(userId);
-            authService.setIsLogin(userId, true);
-            ctx.pipeline().addLast(new ClientHandler(authService, userId, serverDir));
+            AuthService.getInstance().setIsLogin(userId, true);
+            ctx.pipeline().addLast(new ClientHandler(userId, serverDir));
+            ctx.pipeline().remove(this);
             System.out.println("Добавлен обработчик для нового клиента");
         } else {
             command.setMessage("Неверный логин или пароль");
@@ -75,12 +73,12 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     }
 
     private boolean checkAlreadyLogin(String userId) {
-        return authService.isLogin(userId);
+        return AuthService.getInstance().isLogin(userId);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        authService.setIsLogin(userId, false);
+        AuthService.getInstance().setIsLogin(userId, false);
         cause.printStackTrace();
         ctx.close();
     }

@@ -9,6 +9,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -62,43 +63,65 @@ public class AuthWindowsController implements Initializable {
 
     public void startAuthentication() {
         if (!checkTextFields()) {
-            setLabelError("Некорректный ввод данных");
+            return;
+        }
+        if (!checkLengthsTextFields()) {
             return;
         }
         String login = loginText.getText().trim();
         String password = passwordText.getText().trim();
         NetworkClient.getInstance().sendCommandToServer(new AuthCommand(login, password));
+        logInButton.setDisable(true);
+        setLabelError("Ожидание ответа от сервера...");
         AuthCommand command = (AuthCommand) NetworkClient.getInstance().readCommandFromServer();
         if (command.isAuthorized()) {
-            logInButton.setDisable(true);
             setLabelOk("Вход выполнен");
             NetworkClient.getInstance().setUserId(command.getUserID());
             runWithPause(200, event -> openMainWindow());
         } else {
             setLabelError(command.getMessage());
+            logInButton.setDisable(false);
         }
     }
 
     public void startRegistration() {
         if (!checkTextFields()) {
-            setLabelError("Некорректный ввод данных");
+            return;
+        }
+        if (!checkLengthsTextFields()) {
             return;
         }
         if (!passwordText.getText().equals(passwordTextRepeat.getText())) {
-            setLabelError("Пароли не совпадают");
+            setLabelError("Пароли не совпадают!");
             return;
         }
         String login = loginText.getText().trim();
         String password = passwordText.getText().trim();
         NetworkClient.getInstance().sendCommandToServer(new SignUpCommand(login, password));
+        signUpButton.setDisable(true);
+        setLabelError("Ожидание ответа от сервера...");
         SignUpCommand command = (SignUpCommand) NetworkClient.getInstance().readCommandFromServer();
         if (command.isSignUp()) {
-            signUpButton.setDisable(true);
             setLabelOk("Регистрация выполнена успешно. Переход на окно авторизации");
             runWithPause(1500, event -> openSignInScreen());
         } else {
             setLabelError(command.getMessage());
+            signUpButton.setDisable(false);
         }
+    }
+
+    public void setLabelError(String message) {
+        Platform.runLater(() -> {
+            signInLabel.setText(message);
+            signInLabel.setTextFill(Color.TOMATO);
+        });
+    }
+
+    public void setLabelOk(String message) {
+        Platform.runLater(() -> {
+            signInLabel.setText(message);
+            signInLabel.setTextFill(Color.GREEN);
+        });
     }
 
     public void openSignUpScreen() {
@@ -124,8 +147,7 @@ public class AuthWindowsController implements Initializable {
                     event -> {
                         NetworkClient.getInstance().stop();
                         Platform.exit();
-                    }
-            );
+                    });
         } catch (IOException e) {
             System.out.println("Ошибка загрузки экрана авторизации");
             e.printStackTrace();
@@ -133,7 +155,12 @@ public class AuthWindowsController implements Initializable {
     }
 
     private void showNewStage(Stage stage, String FXMLFile, String title, EventHandler<WindowEvent> onCloseEvent) throws IOException {
-        Scene newScene = new Scene(FXMLLoader.load(getClass().getResource(FXMLFile)));
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        fxmlLoader.setLocation(getClass().getResource(FXMLFile));
+        Parent root = fxmlLoader.load();
+        AuthWindowsController controller = fxmlLoader.getController();
+        NetworkClient.getInstance().setAuthWindowsController(controller);
+        Scene newScene = new Scene(root);
         newScene.getStylesheets().add((getClass().getResource("/css/style.css")).toExternalForm());
         stage.setTitle(title);
         stage.setScene(newScene);
@@ -142,28 +169,34 @@ public class AuthWindowsController implements Initializable {
 
     private boolean checkTextFields() {
         if (loginText.getText().trim().isEmpty() || passwordText.getText().trim().isEmpty()) {
-//            loginText.setText("");
-            passwordText.setText("");
+            setLabelError("Некорректный ввод данных");
+            setTextFieldsZeroLength();
             return false;
         }
         return true;
     }
 
-    public void setLabelError(String message) {
-        Platform.runLater(() -> {
-            signInLabel.setText(message);
-            signInLabel.setTextFill(Color.TOMATO);
-        });
+    private boolean checkLengthsTextFields() {
+        if (loginText.getText().length() < 3) {
+            setLabelError("Слишком короткое имя пользователя. Допустимо не менее 3-х символов.");
+            return false;
+        } else if (passwordText.getText().length() < 3) {
+            setLabelError("Слишком короткий пароль. Допустимо не менее 3-х символов.");
+            setTextFieldsZeroLength();
+            return false;
+        }
+        return true;
     }
 
-    public void setLabelOk(String message) {
-        Platform.runLater(() -> {
-            signInLabel.setText(message);
-            signInLabel.setTextFill(Color.GREEN);
-        });
+    private void setTextFieldsZeroLength() {
+//        loginText.setText("");
+        passwordText.setText("");
+        if (passwordTextRepeat != null) {
+            passwordTextRepeat.setText("");
+        }
     }
 
-    public void runWithPause(int duration, EventHandler<ActionEvent> event) {
+    private void runWithPause(int duration, EventHandler<ActionEvent> event) {
         pause.setDuration(Duration.millis(duration));
         pause.setOnFinished(event);
         pause.play();
@@ -172,17 +205,19 @@ public class AuthWindowsController implements Initializable {
     private void openMainWindow() {
         try {
             Stage mainWindow = new Stage();
-            Scene mainScene = new Scene(FXMLLoader.load(getClass().getResource("/fxml/mainWindow.fxml")));
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("/fxml/mainWindow.fxml"));
+            Scene mainScene = new Scene(loader.load());
+            MainWindowController controller = loader.getController();
             mainScene.getStylesheets().add((getClass().getResource("/css/style.css")).toExternalForm());
             mainWindow.setTitle("Cloud Drive");
             mainWindow.setScene(mainScene);
-            mainWindow.setOnCloseRequest(event -> {
-                NetworkClient.getInstance().stop();
-                Platform.exit();
-            });
-            Image icon = new Image("img/network_drive.png");
-            mainWindow.getIcons().add(icon);
-//            mainWindow.setResizable(false);
+            mainWindow.setOnCloseRequest(event -> controller.onExitAction());
+            mainWindow.getIcons().add(new Image("img/network_drive.png"));
+
+            mainWindow.setMinHeight(550);
+            mainWindow.setMinWidth(900);
+
             logInButton.getScene().getWindow().hide();
             mainWindow.show();
         } catch (IOException e) {

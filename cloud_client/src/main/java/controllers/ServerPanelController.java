@@ -4,7 +4,6 @@ import commands.ErrorCommand;
 import commands.FilesListCommand;
 import commands.GetFilesListCommand;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -18,29 +17,22 @@ import java.util.List;
 public class ServerPanelController extends PanelController {
 
     public ServerPanelController(TableView<FileInfo> table,
-                                 TableColumn<FileInfo, String> typeFileColumn,
+                                 TableColumn<FileInfo, String> iconFileColumn,
+                                 TableColumn<FileInfo, String> fileTypeColumn,
                                  TableColumn<FileInfo, String> fileNameColumn,
                                  TableColumn<FileInfo, Long> fileSizeColumn,
                                  TableColumn<FileInfo, String> fileDateColumn,
                                  TextField pathField) {
-        super(table, typeFileColumn, fileNameColumn, fileSizeColumn, fileDateColumn, pathField);
-    }
-
-    @Override
-    public void buttonPathUpAction(ActionEvent actionEvent) {
-        Path upperPath = Paths.get(pathField.getText()).getParent();
-        if (upperPath != null) {
-            updateList(upperPath);
-        }
+        super(table, iconFileColumn, fileTypeColumn, fileNameColumn, fileSizeColumn, fileDateColumn, pathField);
     }
 
     @Override
     public void updateList(Path path) {
         NetworkClient.getInstance().sendCommandToServer(new GetFilesListCommand(path));
-        System.out.println("Запрос на список файлов отправлен на сервер");
+        System.out.println("Запрос на списка файлов отправлен на сервер");
         final Object receivedCommand = NetworkClient.getInstance().readCommandFromServer();
         if (receivedCommand instanceof FilesListCommand) {
-            System.out.println("Список файлов получен");
+            System.out.println("Список файлов с сервера получен");
             final FilesListCommand command = (FilesListCommand) receivedCommand;
             Platform.runLater(() -> {
                 pathField.setText(command.getCurrentServerPath());
@@ -53,6 +45,21 @@ public class ServerPanelController extends PanelController {
             Alert alert = new Alert(Alert.AlertType.WARNING, message, ButtonType.OK);
             alert.showAndWait();
         }
+    }
+
+    @Override
+    public void setMouseOnTableAction() {
+        table.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                if (!checkSelectedItemNotNull()) {
+                    return;
+                }
+                if (getSelectedItem().getType().equals(FileInfo.FileType.DIRECTORY)) {
+                    final Path path = Paths.get(getCurrentPathStr()).resolve(getSelectedFileNameStr());
+                    updateList(path);
+                }
+            }
+        });
     }
 
     public void updateList(List<FileInfo> filesList) {
@@ -75,20 +82,5 @@ public class ServerPanelController extends PanelController {
             }
         });
         return list;
-    }
-
-    @Override
-    public void setMouseOnTableAction() {
-        table.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {
-                if (!checkSelectedItemNotNull()) {
-                    return;
-                }
-                if (table.getSelectionModel().getSelectedItem().getType() == FileInfo.FileType.DIRECTORY) {
-                    Path path = Paths.get(pathField.getText()).resolve(table.getSelectionModel().getSelectedItem().getFileName());
-                    updateList(path);
-                }
-            }
-        });
     }
 }

@@ -6,7 +6,6 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.ImageView;
 
 import java.nio.file.Path;
-import java.text.DecimalFormat;
 
 public class TransferItem {
 
@@ -15,64 +14,66 @@ public class TransferItem {
         UPLOAD
     }
 
+    private final String fileName;
+    private long fileSize;
     private final Path sourcePath;
     private final Path dstPath;
-
     private final Operation operation;
-    private ImageView operationImage;
     private final Button operationButton;
     private final ProgressIndicator progressIndicator;
-    private final String fileName;
-    private String fileSize;
     private final Button filePathButton;
     private final Button deleteItemButton;
+    private Button performAgainItemButton;
     private boolean isSuccess = false;
 
     public TransferItem(Operation operation, Path sourceFile, Path dstFile) {
         this.sourcePath = sourceFile;
         this.dstPath = dstFile;
         this.operation = operation;
+        this.operationButton = new Button("");
+        operationButton.setFocusTraversable(false);
         if (operation.equals(Operation.DOWNLOAD)) {
-            operationImage = new ImageView("img/download.png");
+            operationButton.setGraphic(new ImageView("img/download.png"));
         } else if (operation.equals(Operation.UPLOAD)) {
-            operationImage = new ImageView("img/upload.png");
+            operationButton.setGraphic(new ImageView("img/upload.png"));
         }
-        this.operationButton = new Button("", operationImage);
         this.fileName = sourceFile.getFileName().toString();
-        this.fileSize = sizeToStringFormatter(sourceFile.toFile().length());
+        this.fileSize = sourceFile.toFile().length();
         this.filePathButton = new Button(dstFile.toString());
+        filePathButton.setFocusTraversable(false);
         this.progressIndicator = new ProgressIndicator();
         this.deleteItemButton = new Button("", new ImageView("img/delete.png"));
+        deleteItemButton.setFocusTraversable(false);
+        this.performAgainItemButton = new Button("", new ImageView("img/reset.png"));
+        performAgainItemButton.setFocusTraversable(false);
+        performAgainItemButton.setMaxHeight(20);
+        performAgainItemButton.setMaxWidth(20);
+        performAgainItemButton.setMinHeight(20);
+        performAgainItemButton.setMinWidth(20);
+        performAgainItemButton.setPrefHeight(20);
+        performAgainItemButton.setPrefWidth(20);
+        performAgainItemButton.setVisible(false);
         disableButtons();
-    }
-
-    private String sizeToStringFormatter(Long fileSize) {
-        double doubleSize;
-        DecimalFormat decimalFormat = new DecimalFormat( "#.##" );
-        if (fileSize < 1024) {
-            return fileSize + " B";
-        } else if (fileSize < 1024 * 1024) {
-            doubleSize = (double) fileSize / 1024;
-            return decimalFormat.format(doubleSize) + " KB";
-        } else if (fileSize < 1024 * 1024 * 1024) {
-            doubleSize = (double) fileSize / (1024 * 1024);
-            return decimalFormat.format(doubleSize) + " MB";
-        } else {
-            doubleSize = (double) fileSize / (1024 * 1024 * 1024);
-            return decimalFormat.format(doubleSize) + " GB";
-        }
-    }
-
-    public void setFileSize(long fileSize) {
-        this.fileSize = sizeToStringFormatter(fileSize);
     }
 
     public Button getOperationButton() {
         return operationButton;
     }
 
-    public String getFileSize() {
+    public long getFileSize() {
         return fileSize;
+    }
+
+    public void setPerformAgainItemButton(Button performAgainItemButton) {
+        this.performAgainItemButton = performAgainItemButton;
+    }
+
+    public Button getPerformAgainItemButton() {
+        return performAgainItemButton;
+    }
+
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
     }
 
     public Button getFilePathButton() {
@@ -83,15 +84,9 @@ public class TransferItem {
         return sourcePath;
     }
 
-    public ImageView getOperationImage() {
-        return operationImage;
-    }
-
-
     public Path getDstPath() {
         return dstPath;
     }
-
 
     public Button getDeleteItemButton() {
         return deleteItemButton;
@@ -109,28 +104,52 @@ public class TransferItem {
         return isSuccess;
     }
 
-    public void setSuccess(boolean success) {
-        isSuccess = success;
+    public void setProgressIndicator(double progressValue) {
+        Platform.runLater(() -> progressIndicator.setProgress(progressValue));
     }
 
     public ProgressIndicator getProgressIndicator() {
         return progressIndicator;
     }
 
-    public void setProgressIndicator(double progressValue) {
-        Platform.runLater(() -> progressIndicator.setProgress(progressValue));
-
-    }
-
-    public void disableButtons() {
-        deleteItemButton.setDisable(true);
+    public void setOnUnSuccess() {
+        isSuccess = false;
+        if (operation.equals(Operation.DOWNLOAD)) {
+            Platform.runLater(() -> operationButton.setGraphic(new ImageView("img/error_download.png")));
+        } else if (operation.equals(Operation.UPLOAD)) {
+            Platform.runLater(() -> operationButton.setGraphic(new ImageView("img/error_upload.png")));
+        }
         filePathButton.setDisable(true);
-        operationButton.setDisable(true);
+        performAgainItemButton.setVisible(true);
+        enableButtons();
     }
 
-    public void enableButtons() {
-        deleteItemButton.setDisable(false);
+    public void setOnSuccess() {
+        isSuccess = true;
+        performAgainItemButton = null;
+        enableButtons();
+    }
+
+    public void blockProcessing() {
+        deleteItemButton.setDisable(true);
+    }
+
+    public void blockTransfer() {
+        filePathButton.setDisable(true);
+    }
+
+    public void unBlockTransfer() {
         filePathButton.setDisable(false);
+    }
+
+    private void disableButtons() {
+        operationButton.setDisable(true);
+        filePathButton.setDisable(true);
+    }
+
+    private void enableButtons() {
         operationButton.setDisable(false);
+        filePathButton.setDisable(false);
+        deleteItemButton.setDisable(false);
     }
 }

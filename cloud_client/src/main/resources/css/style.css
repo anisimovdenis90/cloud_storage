@@ -46,10 +46,14 @@
 	-fx-border-width: 1;
 }
 
-#operationColumn, #infoColumn, #filePathColumn, #deleteColumn, #fileSizeColumn {
+#resetTransferColumn, #operationColumn, #infoColumn, #filePathColumn, #deleteColumn, #fileSizeColumn {
     -fx-alignment: CENTER;
 }
 
 #fileNameColumn {
     -fx-alignment: CENTER-LEFT;
+}
+
+.tooltip {
+    -fx-background-color:  #2d3447;
 }
