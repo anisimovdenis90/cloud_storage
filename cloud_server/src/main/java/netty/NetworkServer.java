@@ -12,7 +12,6 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import netty.handlers.AuthHandler;
 import services.AuthService;
-import services.DBConnector;
 import services.SQLiteDBConnector;
 
 import java.io.IOException;
@@ -22,8 +21,6 @@ import java.nio.file.Paths;
 public class NetworkServer {
 
     private static final String SERVER_DIR = "./server";
-    private static DBConnector dbConnector;
-    private static AuthService authService;
     private final int port;
 
     public NetworkServer(int port) {
@@ -39,19 +36,17 @@ public class NetworkServer {
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
-                        protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        protected void initChannel(SocketChannel socketChannel) {
                             socketChannel.pipeline().addLast(
                                     new ObjectDecoder(1024 * 1024 * 100, ClassResolvers.cacheDisabled(null)),
                                     new ObjectEncoder(),
-                                    new AuthHandler(authService, SERVER_DIR)
+                                    new AuthHandler(SERVER_DIR)
                             );
                         }
                     });
             ChannelFuture future = bootstrap.bind(port).sync();
             System.out.println("Сервер успешно запущен на порту: " + port);
-            dbConnector = new SQLiteDBConnector();
-            dbConnector.start();
-            authService = new AuthService(dbConnector);
+            AuthService.getInstance().start(new SQLiteDBConnector());
             createMainDirectory();
             future.channel().closeFuture().sync();
         } catch (Exception e) {

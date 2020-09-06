@@ -43,12 +43,12 @@ public class FileInfo implements Serializable {
     private String fileDir;
 
     public FileInfo(Path path, boolean needIcon) {
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         try {
             if (needIcon) {
                 this.fileIcon = getIconImageFX(path);
             } else {
-                fileIcon = null;
+                this.fileIcon = null;
             }
             this.fileName = path.getFileName().toString();
             this.fileSize = Files.size(path);
@@ -65,8 +65,7 @@ public class FileInfo implements Serializable {
 
     private ImageView getIconImageFX(Path path) {
         final ImageIcon icon = (ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(path.toFile());
-        java.awt.Image img = icon.getImage();
-        final BufferedImage bimg = (BufferedImage) img;
+        final BufferedImage bimg = (BufferedImage) icon.getImage();
         final Image imgfx = toFXImage(bimg,null);
         return new ImageView(imgfx);
     }

@@ -48,9 +48,9 @@
             </HBox>
          </children>
       </VBox>
-      <VBox alignment="TOP_CENTER" layoutX="169.0" layoutY="123.0" prefHeight="375.0" prefWidth="462.0">
+      <VBox alignment="TOP_CENTER" layoutX="1.0" layoutY="125.0" prefHeight="375.0" prefWidth="800.0">
          <children>
-            <Label fx:id="signInLabel" alignment="CENTER" prefHeight="27.0" prefWidth="439.0" text="" textFill="#ff0101">
+            <Label fx:id="signInLabel" alignment="CENTER" prefHeight="27.0" prefWidth="650.0" text="" textFill="#ff0101">
                <font>
                   <Font name="System Italic" size="16.0" />
                </font>
