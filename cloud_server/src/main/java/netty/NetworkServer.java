@@ -12,7 +12,8 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import netty.handlers.AuthHandler;
 import services.AuthService;
-import services.SQLiteDBConnector;
+import services.DBPooledConnector;
+import services.SQLiteDBConnection;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,7 +29,7 @@ public class NetworkServer {
     }
 
     public void run() {
-        EventLoopGroup mainGroup = new NioEventLoopGroup();
+        EventLoopGroup mainGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
             ServerBootstrap bootstrap = new ServerBootstrap();
@@ -46,13 +47,14 @@ public class NetworkServer {
                     });
             ChannelFuture future = bootstrap.bind(port).sync();
             System.out.println("Сервер успешно запущен на порту: " + port);
-            AuthService.getInstance().start(new SQLiteDBConnector());
+            AuthService.getInstance().start(new DBPooledConnector(new SQLiteDBConnection(), 5));
             createMainDirectory();
             future.channel().closeFuture().sync();
         } catch (Exception e) {
             System.out.println("Ошибка в работе сервера");
             e.printStackTrace();
         } finally {
+            AuthService.getInstance().stop();
             System.out.println("Сервер остановлен");
             mainGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();

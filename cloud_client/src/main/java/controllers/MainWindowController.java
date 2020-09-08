@@ -200,12 +200,11 @@ public class MainWindowController implements Initializable {
 
     public void onExitAction() {
         if (FileTransfer.getInstance().getCurrentOperation() != null) {
-            if (showConfirmAlert("Выполняется передача файлов. Вы действительно хотите закрыть приложение?")) {
-                if (FileTransfer.getInstance().getCurrentOperation().equals(TransferItem.Operation.DOWNLOAD)) {
-                    FileTransfer.getInstance().cancelDownload();
-                }
+            if (FileTransfer.getInstance().getCurrentOperation().equals(TransferItem.Operation.DOWNLOAD)) {
+                FileTransfer.getInstance().cancelDownload();
             }
         }
+        FileTransfer.getInstance().stop();
         NetworkClient.getInstance().stop();
         Platform.exit();
     }
@@ -467,7 +466,10 @@ public class MainWindowController implements Initializable {
                     FileTransfer.getInstance().addItemToQueue(listToUpload);
                 }
             } catch (IOException e) {
+                final String errorMessage = "Ошибка получения списка файлов из каталога \"%s\", нет доступа.";
+                System.out.printf(errorMessage + "%n", sourcePath);
                 e.printStackTrace();
+                showInfoAlert(String.format(errorMessage, sourcePath), Alert.AlertType.WARNING, true);
             }
         } else {
             TransferItem item = new TransferItem(TransferItem.Operation.UPLOAD, sourcePath, destPath);
@@ -645,7 +647,7 @@ public class MainWindowController implements Initializable {
         alert.setTitle("Подтверждение операции");
         alert.setHeaderText(message);
         Optional<ButtonType> result = alert.showAndWait();
-        return result.isPresent() && result.get() == ButtonType.OK;
+        return result.isPresent() && result.get().equals(ButtonType.OK);
     }
 
     public String showTextInputDialog(String filename, String headerText, String contentText) {

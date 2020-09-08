@@ -5,6 +5,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import services.NetworkClient;
 
@@ -23,6 +25,11 @@ public class ClientApp extends Application {
         NetworkClient.getInstance().setAuthWindowsController(controller);
         NetworkClient.getInstance().start();
         Scene scene = new Scene(root);
+        scene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+            if (event.getCode().equals(KeyCode.ENTER)) {
+                controller.startAuthentication();
+            }
+        });
         scene.getStylesheets().add((getClass().getResource("/css/style.css")).toExternalForm());
         primaryStage.setTitle("Авторизация");
         primaryStage.setScene(scene);

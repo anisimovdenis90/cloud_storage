@@ -16,6 +16,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -161,6 +163,15 @@ public class AuthWindowsController implements Initializable {
         AuthWindowsController controller = fxmlLoader.getController();
         NetworkClient.getInstance().setAuthWindowsController(controller);
         Scene newScene = new Scene(root);
+        newScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+            if (event.getCode().equals(KeyCode.ENTER)) {
+                if (title.equals("Регистрация")) {
+                    controller.startRegistration();
+                } else if (title.equals("Авторизация")) {
+                    controller.startAuthentication();
+                }
+            }
+        });
         newScene.getStylesheets().add((getClass().getResource("/css/style.css")).toExternalForm());
         stage.setTitle(title);
         stage.setScene(newScene);
@@ -216,7 +227,7 @@ public class AuthWindowsController implements Initializable {
             mainWindow.getIcons().add(new Image("img/network_drive.png"));
 
             mainWindow.setMinHeight(550);
-            mainWindow.setMinWidth(900);
+            mainWindow.setMinWidth(920);
 
             logInButton.getScene().getWindow().hide();
             mainWindow.show();

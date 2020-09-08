@@ -166,13 +166,13 @@ public class OperationTableController {
             if (item.isSuccess()) {
                 String message;
                 if (item.getOperation().equals(TransferItem.Operation.DOWNLOAD)) {
-                    message = "Файл \"" + item.getSourcePath().getFileName() + "\" успешно скачен с сервера в папку \"" + item.getDstPath() + "\"";
+                    message = "Файл \"" + item.getSourcePath().getFileName() + "\" успешно скачен с сервера в папку \"" + item.getDstPath() + "\".";
                 } else {
-                    message = "Файл \"" + item.getSourcePath().getFileName() + "\" успешно загружен на сервер в папку " + item.getDstPath() + "\"";
+                    message = "Файл \"" + item.getSourcePath().getFileName() + "\" успешно загружен на сервер в папку \"" + item.getDstPath() + "\".";
                 }
                 mainWindowController.showInfoAlert(message, Alert.AlertType.INFORMATION, false);
             } else {
-                mainWindowController.showInfoAlert("Ошибка передачи файла \"" + item.getFileName() + "\"", Alert.AlertType.INFORMATION, false);
+                mainWindowController.showInfoAlert("Ошибка передачи файла \"" + item.getFileName() + "\".", Alert.AlertType.INFORMATION, false);
             }
         });
         item.getOperationButton().setTooltip(new Tooltip("Информация об операции"));
