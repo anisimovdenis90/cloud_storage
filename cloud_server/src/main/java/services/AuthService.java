@@ -9,7 +9,7 @@ public class AuthService {
 
     private static AuthService instance;
 
-    private DBConnector dbConnector;
+    private DBPooledConnector dbConnector;
 
     private AuthService() {
 
@@ -22,7 +22,7 @@ public class AuthService {
         return instance;
     }
 
-    public void start(DBConnector dbConnector) {
+    public void start(DBPooledConnector dbConnector) {
         this.dbConnector = dbConnector;
         resetIsLogin();
     }
@@ -116,6 +116,10 @@ public class AuthService {
             System.err.println("Ошибка изменения данных в базе!");
             e.printStackTrace();
         }
+    }
+
+    public void stop() {
+        dbConnector.stop();
     }
 
     private synchronized void resetIsLogin() {

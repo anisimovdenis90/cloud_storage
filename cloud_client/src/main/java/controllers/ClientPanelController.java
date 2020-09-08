@@ -54,7 +54,7 @@ public class ClientPanelController extends PanelController {
                     updateList(path.getParent());
                 }
             } else {
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Невозможно обновить список файлов по текущему пути!");
+                final Alert alert = new Alert(Alert.AlertType.ERROR, "Невозможно обновить список файлов по текущему пути!");
                 alert.showAndWait();
             }
 //            e.printStackTrace();
@@ -78,7 +78,10 @@ public class ClientPanelController extends PanelController {
                         }
                         desktop.open(path.toFile());
                     } catch (IOException e) {
-                        System.out.println("Ошибка открытия файла " + path.getFileName().toString());
+                        final String message = "Ошибка открытия файла \"%s\".";
+                        System.out.printf(message + "%n", path);
+                        final Alert alert = new Alert(Alert.AlertType.ERROR, String.format(message, path.getFileName()));
+                        alert.showAndWait();
                     }
                 }
             }
@@ -96,7 +99,10 @@ public class ClientPanelController extends PanelController {
                 desktop.open(path.toFile());
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            final String message = "Ошибка запуска штатного файлового менеджера.";
+            System.out.println(message);
+            final Alert alert = new Alert(Alert.AlertType.ERROR, message);
+            alert.showAndWait();
         }
     }
 }

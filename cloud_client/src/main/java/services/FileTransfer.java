@@ -16,16 +16,17 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.function.Consumer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class FileTransfer {
 
     private static final int DEFAULT_BUFFER_SIZE = 1024 * 1024 * 10;
     private static final int LIMIT_OF_OPERATIONS = 300;
 
+    private final ExecutorService executor;
     private static FileTransfer instance;
     private ArrayBlockingQueue<TransferItem> mainQueue;
-    private Thread workThread;
     private int totalOperations;
     private int performedOperations;
     private long totalOperationsSize;
@@ -39,7 +40,7 @@ public class FileTransfer {
     private FileOutputStream fileWriter;
 
     private FileTransfer() {
-
+        this.executor = Executors.newSingleThreadExecutor();
     }
 
     public static FileTransfer getInstance() {
@@ -60,27 +61,11 @@ public class FileTransfer {
         setInfoLabels();
     }
 
-    public boolean isTransferActive() {
-        return isTransferActive;
-    }
-
-    public void setTotalOperations(int totalOperations) {
-        this.totalOperations = totalOperations;
-    }
-
-    public TransferItem getCurrentTransferItem() {
-        return currentTransferItem;
-    }
-
     public TransferItem.Operation getCurrentOperation() {
         if (currentTransferItem != null) {
             return currentTransferItem.getOperation();
         }
         return null;
-    }
-
-    public TransferItem.Operation getCurrentOperationType() {
-        return currentTransferItem.getOperation();
     }
 
     public void addItemToQueue(List<TransferItem> list) {
@@ -165,10 +150,10 @@ public class FileTransfer {
     }
 
     private void runWorkThread() {
-        if (workThread != null && !workThread.getState().equals(Thread.State.TERMINATED)) {
-            return;
-        }
-        workThread = new Thread(() -> {
+        executor.execute(() -> {
+            if (mainQueue.size() == 0) {
+                return;
+            }
             mainWindow.disableButtons();
             operationTable.disableButtons();
             isTransferActive = true;
@@ -179,7 +164,7 @@ public class FileTransfer {
                 if (item.getOperation().equals(TransferItem.Operation.UPLOAD)) {
                     sendFileToServer(item);
                 } else if (item.getOperation().equals(TransferItem.Operation.DOWNLOAD)) {
-                    getFileFromServer(item, destDir -> mainWindow.refreshClientFilesList());
+                    getFileFromServer(item);
                 }
             }
             operationTable.getItemsList().forEach(TransferItem::unBlockTransfer);
@@ -189,11 +174,9 @@ public class FileTransfer {
             mainWindow.refreshServerFilesList();
             isTransferActive = false;
         });
-        workThread.setDaemon(true);
-        workThread.start();
     }
 
-    public void getFileFromServer(TransferItem transferItem, Consumer<Path> callBack) {
+    public void getFileFromServer(TransferItem transferItem) {
         System.out.printf("Начало скачивания файла \"%s\" с сервера%n", transferItem.getSourcePath());
         NetworkClient.getInstance().sendCommandToServer(new FileRequestCommand(transferItem.getSourcePath().toString()));
         try {
@@ -207,7 +190,7 @@ public class FileTransfer {
             while (true) {
                 final FileMessageCommand command = (FileMessageCommand) NetworkClient.getInstance().readCommandFromServer();
 
-                System.out.printf("Часть %d из %d%n", command.getPartNumber(), command.getPartsOfFile());
+                System.out.printf("Часть %d из %d файла %s%n", command.getPartNumber(), command.getPartsOfFile(), command.getFileName());
 
                 fileWriter.write(command.getData());
                 currentOperationsSize += command.getData().length;
@@ -223,7 +206,7 @@ public class FileTransfer {
             transferItem.setOnSuccess();
             performedOperations++;
             operationTable.setCurrentOperationsCountLbl(performedOperations + "/" + totalOperations);
-            callBack.accept(transferItem.getDstPath());
+            mainWindow.refreshClientFilesList();
         } catch (IOException e) {
             transferItem.setOnUnSuccess();
             System.out.printf("Ошибка скачивания файла %s с сервера%n", transferItem.getSourcePath());
@@ -239,13 +222,13 @@ public class FileTransfer {
             partsOfFile++;
         }
         System.out.printf("Размер файла %d, количество частей %d%n", fileSize, partsOfFile);
-        FileMessageCommand fileToServerCommand = new FileMessageCommand(
+        final FileMessageCommand fileToServerCommand = new FileMessageCommand(
                 transferItem.getSourcePath().getFileName().toString(),
                 transferItem.getDstPath().toString(),
                 fileSize,
                 partsOfFile,
                 0,
-                new byte[DEFAULT_BUFFER_SIZE]
+                fileSize < DEFAULT_BUFFER_SIZE ? new byte[(int) fileSize] : new byte[DEFAULT_BUFFER_SIZE]
         );
         operationTable.scrollToElement(transferItem);
         try (FileInputStream fileReader = new FileInputStream(transferItem.getSourcePath().toFile())) {
@@ -254,12 +237,12 @@ public class FileTransfer {
             do {
                 readBytes = fileReader.read(fileToServerCommand.getData());
                 fileToServerCommand.setPartNumber(partsSend + 1);
-                if (readBytes < DEFAULT_BUFFER_SIZE) {
+                if (readBytes < fileToServerCommand.getData().length) {
                     fileToServerCommand.setData(Arrays.copyOfRange(fileToServerCommand.getData(), 0, Math.max(readBytes, 0)));
                 }
                 NetworkClient.getInstance().sendCommandToServer(fileToServerCommand);
                 partsSend++;
-                System.out.printf("Отправлена часть %d из %d%n", partsSend, partsOfFile);
+                System.out.printf("Отправлена часть %d из %d файла %s%n", partsSend, partsOfFile, transferItem.getFileName());
                 currentOperationsSize += readBytes;
                 operationTable.setOperationsProgress((float) currentOperationsSize / totalOperationsSize);
                 transferItem.setProgressIndicator((float) partsSend / partsOfFile);
@@ -284,5 +267,9 @@ public class FileTransfer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void stop() {
+        executor.shutdownNow();
     }
 }

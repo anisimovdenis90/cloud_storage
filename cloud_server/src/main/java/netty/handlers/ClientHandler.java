@@ -13,12 +13,15 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class ClientHandler extends ChannelInboundHandlerAdapter {
 
     private static final String CLIENT_DIR_PREFIX = "client";
     private static final int DEFAULT_BUFFER_SIZE = 1024 * 1024 * 10;
+    private final ExecutorService executor;
     private final String serverDir;
     private final String userId;
     private final String rootClientDirectory;
@@ -31,6 +34,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     public ClientHandler(String userId, String serverDir) {
         this.userId = userId;
         this.serverDir = serverDir;
+        this.executor = Executors.newSingleThreadExecutor();
         clientDir = CLIENT_DIR_PREFIX + userId;
         rootClientDirectory = serverDir + "/" + clientDir;
         createClientDirectory();
@@ -41,6 +45,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         System.out.printf("Клиент отключился по адресу %s%n", ctx.channel().remoteAddress().toString());
         AuthService.getInstance().setIsLogin(userId, false);
         checkFileWriter();
+        executor.shutdownNow();
         ctx.close();
     }
 
@@ -223,7 +228,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             System.out.println(message);
         } catch (IOException e) {
             final String message = "Ошибка создания на сервере папки \"%s\"";
-            System.out.println("Ошибка создания на сервере папки " + command.getFolderName());
+            System.out.printf(message + "%n", command.getFolderName());
             ctx.writeAndFlush(new ErrorCommand(String.format(message, command.getFolderName())));
             e.printStackTrace();
         }
@@ -268,7 +273,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void sendFileToClient(ChannelHandlerContext ctx, FileRequestCommand command) {
-        new Thread(() -> {
+        executor.execute(() -> {
             final Path fileToSend = Paths.get(serverDir, command.getFileToDownload());
             System.out.printf("Начало передачи файла %s клиенту %s%n", fileToSend, userId);
             final long fileSize = fileToSend.toFile().length();
@@ -277,13 +282,13 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                 partsOfFile++;
             }
             System.out.printf("Размер файла %d, количество пакетов %d при размере буфера %d%n", fileSize, partsOfFile, DEFAULT_BUFFER_SIZE);
-            FileMessageCommand fileToClientCommand = new FileMessageCommand(
+            final FileMessageCommand fileToClientCommand = new FileMessageCommand(
                     fileToSend.getFileName().toString(),
                     null,
                     fileSize,
                     partsOfFile,
                     0,
-                    new byte[DEFAULT_BUFFER_SIZE]
+                    fileSize < DEFAULT_BUFFER_SIZE ? new byte[(int) fileSize] : new byte[DEFAULT_BUFFER_SIZE]
             );
             try (FileInputStream fileReader = new FileInputStream(fileToSend.toFile())) {
                 int readBytes;
@@ -291,20 +296,20 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                 do {
                     readBytes = fileReader.read(fileToClientCommand.getData());
                     fileToClientCommand.setPartNumber(partsSend + 1);
-                    if (readBytes < DEFAULT_BUFFER_SIZE) {
+                    if (readBytes < fileToClientCommand.getData().length) {
                         fileToClientCommand.setData(Arrays.copyOfRange(fileToClientCommand.getData(), 0, Math.max(readBytes, 0)));
                     }
                     ctx.writeAndFlush(fileToClientCommand);
                     partsSend++;
                     System.out.printf("Отправлена часть %d из %d%n", partsSend, partsOfFile);
                     Thread.sleep(10);
-                } while (partsSend != partsOfFile);
+                } while (partsSend < partsOfFile);
                 System.out.printf("Файл %s успешно передан клиенту %s%n", command.getFileToDownload(), userId);
             } catch (IOException | InterruptedException e) {
                 System.out.printf("Ошибка передачи файла %s клиенту %s%n", command.getFileToDownload(), userId);
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     private void createClientDirectory() {

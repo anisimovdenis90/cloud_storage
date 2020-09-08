@@ -65,7 +65,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
             AuthService.getInstance().setIsLogin(userId, true);
             ctx.pipeline().addLast(new ClientHandler(userId, serverDir));
             ctx.pipeline().remove(this);
-            System.out.println("Добавлен обработчик для нового клиента");
+            System.out.println("Добавлен обработчик для нового клиента с ID: " + userId);
         } else {
             command.setMessage("Неверный логин или пароль");
         }
