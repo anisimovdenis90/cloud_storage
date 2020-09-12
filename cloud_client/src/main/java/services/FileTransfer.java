@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 public class FileTransfer {
 
@@ -40,7 +41,11 @@ public class FileTransfer {
     private FileOutputStream fileWriter;
 
     private FileTransfer() {
-        this.executor = Executors.newSingleThreadExecutor();
+        this.executor = Executors.newSingleThreadExecutor(runnable -> {
+            Thread thread = Executors.defaultThreadFactory().newThread(runnable);
+            thread.setDaemon(true);
+            return thread;
+        });
     }
 
     public static FileTransfer getInstance() {
@@ -267,9 +272,5 @@ public class FileTransfer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void stop() {
-        executor.shutdownNow();
     }
 }

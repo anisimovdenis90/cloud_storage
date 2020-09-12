@@ -63,6 +63,7 @@ public class DBPooledConnector {
         try {
             for (Connection connection : connectionsPool.keySet()) {
                 connection.close();
+                connectionsPool.remove(connection);
             }
         } catch (SQLException e) {
             System.err.println("Ошибка закрытия соединения с базой данных");

@@ -51,15 +51,19 @@ public class ServerPanelController extends PanelController {
     public void setMouseOnTableAction() {
         table.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
-                if (!checkSelectedItemNotNull()) {
-                    return;
-                }
-                if (getSelectedItem().getType().equals(FileInfo.FileType.DIRECTORY)) {
-                    final Path path = Paths.get(getCurrentPathStr()).resolve(getSelectedFileNameStr());
-                    updateList(path);
-                }
+                doubleClickAction();
             }
         });
+    }
+
+    public void doubleClickAction() {
+        if (!checkSelectedItemNotNull()) {
+            return;
+        }
+        if (getSelectedItem().getType().equals(FileInfo.FileType.DIRECTORY)) {
+            final Path path = Paths.get(getCurrentPathStr()).resolve(getSelectedFileNameStr());
+            updateList(path);
+        }
     }
 
     public void updateList(List<FileInfo> filesList) {

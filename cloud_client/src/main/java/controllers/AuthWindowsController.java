@@ -220,10 +220,22 @@ public class AuthWindowsController implements Initializable {
             loader.setLocation(getClass().getResource("/fxml/mainWindow.fxml"));
             Scene mainScene = new Scene(loader.load());
             MainWindowController controller = loader.getController();
+            mainScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+                if (event.getCode().equals(KeyCode.DELETE)) {
+                    controller.deleteButtonAction();
+                }
+                if (event.getCode().equals(KeyCode.SPACE)) {
+                    if (controller.getMaximizeOperations().isDisabled()) {
+                        controller.minimizeOperationsTable();
+                    } else {
+                        controller.maximizeOperationsTable();
+                    }
+                }
+            });
             mainScene.getStylesheets().add((getClass().getResource("/css/style.css")).toExternalForm());
             mainWindow.setTitle("Cloud Drive");
             mainWindow.setScene(mainScene);
-            mainWindow.setOnCloseRequest(event -> controller.onExitAction());
+            mainWindow.setOnCloseRequest(controller::onExitAction);
             mainWindow.getIcons().add(new Image("img/network_drive.png"));
 
             mainWindow.setMinHeight(550);
