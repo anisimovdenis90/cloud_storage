@@ -96,6 +96,7 @@ public class NetworkClient {
             if (in != null) in.close();
             if (out != null) out.close();
             if (socket != null) socket.close();
+            System.out.println("Закрыто соединение с сервером");
         } catch (IOException e) {
             e.printStackTrace();
         }

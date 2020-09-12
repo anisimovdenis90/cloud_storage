@@ -1,10 +1,12 @@
 package controllers;
 
+import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import util.FileInfo;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -65,27 +67,31 @@ public class ClientPanelController extends PanelController {
     public void setMouseOnTableAction() {
         table.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
-                if (!checkSelectedItemNotNull()) {
-                    return;
-                }
-                final Path path = Paths.get(getCurrentPathStr()).resolve(getSelectedFileNameStr());
-                if (Files.isDirectory(path)) {
-                    updateList(path);
-                } else {
-                    try {
-                        if (desktop == null) {
-                            desktop = Desktop.getDesktop();
-                        }
-                        desktop.open(path.toFile());
-                    } catch (IOException e) {
-                        final String message = "Ошибка открытия файла \"%s\".";
-                        System.out.printf(message + "%n", path);
-                        final Alert alert = new Alert(Alert.AlertType.ERROR, String.format(message, path.getFileName()));
-                        alert.showAndWait();
-                    }
-                }
+                doubleClickAction();
             }
         });
+    }
+
+    public void doubleClickAction() {
+        if (!checkSelectedItemNotNull()) {
+            return;
+        }
+        final Path path = Paths.get(getCurrentPathStr()).resolve(getSelectedFileNameStr());
+        if (Files.isDirectory(path)) {
+            updateList(path);
+        } else {
+            try {
+                if (desktop == null) {
+                    desktop = Desktop.getDesktop();
+                }
+                desktop.open(path.toFile());
+            } catch (IOException e) {
+                final String message = "Ошибка открытия файла \"%s\".";
+                System.out.printf(message + "%n", path);
+                final Alert alert = new Alert(Alert.AlertType.ERROR, String.format(message, path.getFileName()));
+                alert.showAndWait();
+            }
+        }
     }
 
     public void openFile(Path path) {

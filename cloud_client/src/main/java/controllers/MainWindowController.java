@@ -6,10 +6,14 @@ import commands.FilesListInDirRequest;
 import commands.GetFilesListCommand;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.WindowEvent;
 import services.FileTransfer;
 import services.NetworkClient;
 import util.FileInfo;
@@ -149,6 +153,10 @@ public class MainWindowController implements Initializable {
     private ServerPanelController serverTable;
     private OperationTableController operationTableController;
 
+    public Button getMaximizeOperations() {
+        return maximizeOperations;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         clientTable = new ClientPanelController(
@@ -160,6 +168,16 @@ public class MainWindowController implements Initializable {
                 dateColumnClient,
                 clientPathField
         );
+        clientTable.setRootPath(".");
+        clientTable.updateList();
+
+        clientTableView.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+            if (event.getCode().equals(KeyCode.ENTER)) {
+                clientTable.doubleClickAction();
+            } else if (event.getCode().equals(KeyCode.BACK_SPACE)) {
+            clientTable.buttonPathUpAction();
+            }
+        });
 
         serverTable = new ServerPanelController(
                 serverTableView,
@@ -170,8 +188,14 @@ public class MainWindowController implements Initializable {
                 dateColumnServer,
                 serverPathField
         );
-        clientTable.setRootPath(".");
-        clientTable.updateList();
+
+        serverTableView.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+            if (event.getCode().equals(KeyCode.ENTER)) {
+                serverTable.doubleClickAction();
+            } else if (event.getCode().equals(KeyCode.BACK_SPACE)) {
+                serverTable.buttonPathUpAction();
+            }
+        });
 
         operationTableController = new OperationTableController(
                 operationTable,
@@ -198,13 +222,16 @@ public class MainWindowController implements Initializable {
         FileTransfer.getInstance().init(operationTableController, this);
     }
 
-    public void onExitAction() {
+    public void onExitAction(WindowEvent event) {
         if (FileTransfer.getInstance().getCurrentOperation() != null) {
+            if (!showConfirmAlert("Выполняется передача файлов. Вы действительно хотите закрыть приложение?")) {
+                event.consume();
+                return;
+            }
             if (FileTransfer.getInstance().getCurrentOperation().equals(TransferItem.Operation.DOWNLOAD)) {
                 FileTransfer.getInstance().cancelDownload();
             }
         }
-        FileTransfer.getInstance().stop();
         NetworkClient.getInstance().stop();
         Platform.exit();
     }
@@ -213,19 +240,31 @@ public class MainWindowController implements Initializable {
         operationsPane.setPrefHeight(50);
         minimizeOperations.setDisable(true);
 
-        minimizeOperations.setOnAction(event -> {
-            operationsPane.setPrefHeight(50);
-            maximizeOperations.setDisable(false);
-            minimizeOperations.setDisable(true);
-        });
-
-        maximizeOperations.setOnAction(event -> {
-            operationsPane.setPrefHeight(500);
-            minimizeOperations.setDisable(false);
-            maximizeOperations.setDisable(true);
-        });
+//        minimizeOperations.setOnAction(event -> {
+//            operationsPane.setPrefHeight(50);
+//            maximizeOperations.setDisable(false);
+//            minimizeOperations.setDisable(true);
+//        });
+//
+//        maximizeOperations.setOnAction(event -> {
+//            operationsPane.setPrefHeight(500);
+//            minimizeOperations.setDisable(false);
+//            maximizeOperations.setDisable(true);
+//        });
 
         opacitySlider.valueProperty().addListener((observable, oldValue, newValue) -> operationsPane.setOpacity(1 - newValue.doubleValue() / 1.5));
+    }
+
+    public void minimizeOperationsTable() {
+        operationsPane.setPrefHeight(50);
+        maximizeOperations.setDisable(false);
+        minimizeOperations.setDisable(true);
+    }
+
+    public void maximizeOperationsTable() {
+        operationsPane.setPrefHeight(500);
+        minimizeOperations.setDisable(false);
+        maximizeOperations.setDisable(true);
     }
 
     private void setContextMenusToTables() {
