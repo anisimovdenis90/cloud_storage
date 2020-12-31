@@ -7,8 +7,6 @@ import controllers.AuthWindowsController;
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.file.Path;
@@ -71,11 +69,11 @@ public class NetworkClient {
         if (repeatConnectionThread == null || repeatConnectionThread.getState().equals(Thread.State.TERMINATED)) {
             repeatConnectionThread = new Thread(() -> {
                 final int counts = 10;
+                final String message = "Отсутствует связь с сервером, повторное подключение через %d...%n";
                 while (!connectionSuccess) {
                     for (int i = 0; i < counts; i++) {
                         try {
-                            String message = "Отсутствует связь с сервером, повторное подключение через %d...";
-                            System.out.printf(message + "%n", (counts - i));
+                            System.out.printf(message, (counts - i));
                             authWindowsController.setLabelError(String.format(message, (counts - i)));
                             Thread.sleep(1000);
                         } catch (InterruptedException interruptedException) {

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Semaphore;
 
 public class DBPooledConnector {
@@ -21,7 +22,10 @@ public class DBPooledConnector {
     }
 
     public void start() {
-        connectionsPool.put(createConnection(), true);
+        Optional<Connection> connectionOptional;
+        if ((connectionOptional = createConnection()).isPresent()) {
+            connectionsPool.put(connectionOptional.get(), true);
+        }
         System.out.println("Количество подключений " + connectionsPool.size());
     }
 
@@ -34,8 +38,10 @@ public class DBPooledConnector {
                     entry.setValue(false);
                     connection = entry.getKey();
                 } else if (connectionsPool.size() <= LIMIT_OF_CONNECTIONS) {
-                    connection = createConnection();
-                    connectionsPool.put(connection, false);
+                    Optional<Connection> connectionOptional;
+                    if ((connectionOptional = createConnection()).isPresent()) {
+                        connectionsPool.put(connectionOptional.get(), false);
+                    }
                 }
                 System.out.println("Отдано подключение к базе");
                 checkConnection();
@@ -81,16 +87,15 @@ public class DBPooledConnector {
         System.out.println("Свободные подключения " + countOfFreeConnections + " из " + connectionsPool.size());
     }
 
-    private Connection createConnection() {
+    private Optional<Connection> createConnection() {
         try {
             Connection connection = connector.createConnection();
             System.out.println("Создано новое подключение к базе данных");
-            return connection;
+            return Optional.of(connection);
         } catch (SQLException e) {
             System.err.println("Ошибка создания нового подключения к базе данных!");
             e.printStackTrace();
         }
-        return null;
+        return Optional.empty();
     }
-
 }

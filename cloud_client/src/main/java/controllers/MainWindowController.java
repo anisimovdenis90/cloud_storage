@@ -6,7 +6,6 @@ import commands.FilesListInDirRequest;
 import commands.GetFilesListCommand;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -239,18 +238,6 @@ public class MainWindowController implements Initializable {
     private void prepareOperationsTable() {
         operationsPane.setPrefHeight(50);
         minimizeOperations.setDisable(true);
-
-//        minimizeOperations.setOnAction(event -> {
-//            operationsPane.setPrefHeight(50);
-//            maximizeOperations.setDisable(false);
-//            minimizeOperations.setDisable(true);
-//        });
-//
-//        maximizeOperations.setOnAction(event -> {
-//            operationsPane.setPrefHeight(500);
-//            minimizeOperations.setDisable(false);
-//            maximizeOperations.setDisable(true);
-//        });
 
         opacitySlider.valueProperty().addListener((observable, oldValue, newValue) -> operationsPane.setOpacity(1 - newValue.doubleValue() / 1.5));
     }
