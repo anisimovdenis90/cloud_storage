@@ -12,7 +12,6 @@ public class AuthService {
     private DBPooledConnector dbConnector;
 
     private AuthService() {
-
     }
 
     public static AuthService getInstance() {
@@ -49,24 +48,25 @@ public class AuthService {
     }
 
     public synchronized void setIsLogin(String id, boolean isLogin) {
+        final Connection connection = dbConnector.getConnection();
         try {
-            final Connection connection = dbConnector.getConnection();
             final PreparedStatement statement = connection.prepareStatement(
                     "UPDATE users SET isLogin = ? WHERE id = ?"
             );
             statement.setInt(1, isLogin ? 1 : 0);
             statement.setString(2, id);
             statement.execute();
-            dbConnector.closeConnection(connection);
         } catch (SQLException e) {
             System.err.println("Ошибка изменения данных в базе!");
             e.printStackTrace();
+        } finally {
+            dbConnector.closeConnection(connection);
         }
     }
 
     public boolean isLogin(String id) {
+        final Connection connection = dbConnector.getConnection();
         try {
-            final Connection connection = dbConnector.getConnection();
             final PreparedStatement statement = connection.prepareStatement(
                     "SELECT login FROM users WHERE id = ? AND isLogin = 1"
             );
@@ -75,17 +75,18 @@ public class AuthService {
             if (resultSet.next()) {
                 return true;
             }
-            dbConnector.closeConnection(connection);
         } catch (SQLException e) {
             System.err.println("Ошибка получения данных из базы!");
             e.printStackTrace();
+        } finally {
+            dbConnector.closeConnection(connection);
         }
         return false;
     }
 
     public boolean checkIsUsedUserId(String login) {
+        final Connection connection = dbConnector.getConnection();
         try {
-            final Connection connection = dbConnector.getConnection();
             final PreparedStatement statement = connection.prepareStatement(
                     "SELECT id FROM users WHERE login = ?"
             );
@@ -94,27 +95,29 @@ public class AuthService {
             if (resultSet.next()) {
                 return false;
             }
-            dbConnector.closeConnection(connection);
         } catch (SQLException e) {
             System.err.println("Ошибка получения данных из базы!");
             e.printStackTrace();
+        } finally {
+            dbConnector.closeConnection(connection);
         }
         return true;
     }
 
     public synchronized void registerNewUser(String login, String password) {
+        final Connection connection = dbConnector.getConnection();
         try {
-            final Connection connection = dbConnector.getConnection();
             final PreparedStatement statement = connection.prepareStatement(
                     "INSERT INTO users (login, password) VALUES (?, ?)"
             );
             statement.setString(1, login);
             statement.setString(2, password);
             statement.execute();
-            dbConnector.closeConnection(connection);
         } catch (SQLException e) {
             System.err.println("Ошибка изменения данных в базе!");
             e.printStackTrace();
+        } finally {
+            dbConnector.closeConnection(connection);
         }
     }
 
@@ -123,8 +126,8 @@ public class AuthService {
     }
 
     private synchronized void resetIsLogin() {
+        final Connection connection = dbConnector.getConnection();
         try {
-            final Connection connection = dbConnector.getConnection();
             final PreparedStatement statement = connection.prepareStatement(
                     "UPDATE users SET isLogin = 0"
             );
@@ -133,6 +136,8 @@ public class AuthService {
         } catch (SQLException e) {
             System.err.println("Ошибка изменения данных в базе!");
             e.printStackTrace();
+        } finally {
+            dbConnector.closeConnection(connection);
         }
     }
 }
