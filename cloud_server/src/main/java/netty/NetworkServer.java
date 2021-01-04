@@ -12,6 +12,8 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import netty.handlers.AuthHandler;
 import services.AuthService;
+import services.DBPooledConnector;
+import services.SQLiteDBConnection;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -45,6 +47,7 @@ public class NetworkServer {
                     });
             ChannelFuture future = bootstrap.bind(port).sync();
             System.out.println("Сервер успешно запущен на порту: " + port);
+            AuthService.getInstance().start(new DBPooledConnector(new SQLiteDBConnection(), 5));
             createMainDirectory();
             future.channel().closeFuture().sync();
         } catch (Exception e) {

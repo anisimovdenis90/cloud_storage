@@ -9,7 +9,7 @@ public class AuthService {
 
     private static volatile AuthService instance;
 
-
+    private DBConnector dbConnector;
 
     private AuthService() {
     }
@@ -25,12 +25,16 @@ public class AuthService {
         return instance;
     }
 
-
+    public void start(DBConnector dbConnector) {
+        this.dbConnector = dbConnector;
+        resetIsLogin();
+    }
 
     public String getUserIDByLoginAndPassword(String login, String password) {
         String userID = null;
         Connection connection = null;
         try {
+            connection = dbConnector.getConnection();
             final PreparedStatement statement = connection.prepareStatement(
                     "SELECT id FROM users WHERE login = ? AND password = ?"
             );
@@ -44,6 +48,7 @@ public class AuthService {
             System.err.println("Ошибка получения данных из базы!");
             e.printStackTrace();
         } finally {
+            if (connection != null) dbConnector.closeConnection(connection);
         }
         return userID;
     }
@@ -51,6 +56,7 @@ public class AuthService {
     public synchronized void setIsLogin(String id, boolean isLogin) {
         Connection connection = null;
         try {
+            connection = dbConnector.getConnection();
             final PreparedStatement statement = connection.prepareStatement(
                     "UPDATE users SET isLogin = ? WHERE id = ?"
             );
@@ -61,12 +67,14 @@ public class AuthService {
             System.err.println("Ошибка изменения данных в базе!");
             e.printStackTrace();
         } finally {
+            if (connection != null) dbConnector.closeConnection(connection);
         }
     }
 
     public boolean isLogin(String id) {
         Connection connection = null;
         try {
+            connection = dbConnector.getConnection();
             final PreparedStatement statement = connection.prepareStatement(
                     "SELECT login FROM users WHERE id = ? AND isLogin = 1"
             );
@@ -79,6 +87,7 @@ public class AuthService {
             System.err.println("Ошибка получения данных из базы!");
             e.printStackTrace();
         } finally {
+            if (connection != null) dbConnector.closeConnection(connection);
         }
         return false;
     }
@@ -86,6 +95,7 @@ public class AuthService {
     public boolean checkIsUsedUserId(String login) {
         Connection connection = null;
         try {
+            connection = dbConnector.getConnection();
             final PreparedStatement statement = connection.prepareStatement(
                     "SELECT id FROM users WHERE login = ?"
             );
@@ -98,6 +108,7 @@ public class AuthService {
             System.err.println("Ошибка получения данных из базы!");
             e.printStackTrace();
         } finally {
+            if (connection != null) dbConnector.closeConnection(connection);
         }
         return true;
     }
@@ -105,6 +116,7 @@ public class AuthService {
     public synchronized void registerNewUser(String login, String password) {
         Connection connection = null;
         try {
+            connection = dbConnector.getConnection();
             final PreparedStatement statement = connection.prepareStatement(
                     "INSERT INTO users (login, password) VALUES (?, ?)"
             );
@@ -115,13 +127,18 @@ public class AuthService {
             System.err.println("Ошибка изменения данных в базе!");
             e.printStackTrace();
         } finally {
+            if (connection != null) dbConnector.closeConnection(connection);
         }
     }
 
+    public void stop() {
+        dbConnector.close();
+    }
 
     private synchronized void resetIsLogin() {
         Connection connection = null;
         try {
+            connection = dbConnector.getConnection();
             final PreparedStatement statement = connection.prepareStatement(
                     "UPDATE users SET isLogin = 0"
             );
@@ -130,6 +147,7 @@ public class AuthService {
             System.err.println("Ошибка изменения данных в базе!");
             e.printStackTrace();
         } finally {
+            if (connection != null) dbConnector.closeConnection(connection);
         }
     }
 }
