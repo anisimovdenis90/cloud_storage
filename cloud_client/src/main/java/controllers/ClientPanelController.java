@@ -1,12 +1,10 @@
 package controllers;
 
-import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import util.FileInfo;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

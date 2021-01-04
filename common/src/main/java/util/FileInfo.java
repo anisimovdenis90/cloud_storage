@@ -66,7 +66,7 @@ public class FileInfo implements Serializable {
     private ImageView getIconImageFX(Path path) {
         final ImageIcon icon = (ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(path.toFile());
         final BufferedImage bimg = (BufferedImage) icon.getImage();
-        final Image imgfx = toFXImage(bimg,null);
+        final Image imgfx = toFXImage(bimg, null);
         return new ImageView(imgfx);
     }
 

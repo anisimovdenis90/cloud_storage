@@ -39,9 +39,9 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void signUpProcessing(ChannelHandlerContext ctx, SignUpCommand command) {
-        String login = command.getLogin();
+        final String login = command.getLogin();
         if (AuthService.getInstance().checkIsUsedUserId(login)) {
-            String password = command.getPassword();
+            final String password = command.getPassword();
             AuthService.getInstance().registerNewUser(login, password);
             command.setSignUp(true);
         } else {
@@ -51,8 +51,8 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void authProcessing(ChannelHandlerContext ctx, AuthCommand command) {
-        String login = command.getLogin();
-        String password = command.getPassword();
+        final String login = command.getLogin();
+        final String password = command.getPassword();
         userId = AuthService.getInstance().getUserIDByLoginAndPassword(login, password);
         if (userId != null) {
             if (checkAlreadyLogin(userId)) {

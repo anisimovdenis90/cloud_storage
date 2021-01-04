@@ -174,7 +174,7 @@ public class MainWindowController implements Initializable {
             if (event.getCode().equals(KeyCode.ENTER)) {
                 clientTable.doubleClickAction();
             } else if (event.getCode().equals(KeyCode.BACK_SPACE)) {
-            clientTable.buttonPathUpAction();
+                clientTable.buttonPathUpAction();
             }
         });
 

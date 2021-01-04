@@ -6,7 +6,7 @@ public class FileSizeLongToStringFormatter {
 
     public static String format(long fileSize) {
         double doubleSize;
-        final DecimalFormat decimalFormat = new DecimalFormat( "#.##" );
+        final DecimalFormat decimalFormat = new DecimalFormat("#.##");
         if (fileSize < 1024) {
             return fileSize + " B";
         } else if (fileSize < 1024 * 1024) {
