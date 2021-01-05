@@ -17,7 +17,7 @@ public class NetworkClient {
     private static final String DEFAULT_SERVER_ADDRESS = "localhost";
     private static final int DEFAULT_PORT = 8189;
 
-    private static NetworkClient instance;
+    private static volatile NetworkClient instance;
     private static ObjectEncoderOutputStream out;
     private static ObjectDecoderInputStream in;
     private Socket socket;
@@ -28,12 +28,15 @@ public class NetworkClient {
     private Thread repeatConnectionThread = null;
 
     private NetworkClient() {
-
     }
 
     public static NetworkClient getInstance() {
         if (instance == null) {
-            instance = new NetworkClient();
+            synchronized (NetworkClient.class) {
+                if (instance == null) {
+                    instance = new NetworkClient();
+                }
+            }
         }
         return instance;
     }

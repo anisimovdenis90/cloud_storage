@@ -143,7 +143,6 @@ public class AuthService {
                     "UPDATE users SET isLogin = 0"
             );
             statement.execute();
-            dbConnector.closeConnection(connection);
         } catch (SQLException e) {
             System.err.println("Ошибка изменения данных в базе!");
             e.printStackTrace();
