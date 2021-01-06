@@ -112,7 +112,7 @@ public class TransferItem {
         return progressIndicator;
     }
 
-    public void setOnUnSuccess() {
+    public void setOnUnsuccessful() {
         isSuccess = false;
         if (operation.equals(Operation.DOWNLOAD)) {
             Platform.runLater(() -> operationButton.setGraphic(new ImageView("img/error_download.png")));
@@ -124,7 +124,7 @@ public class TransferItem {
         enableButtons();
     }
 
-    public void setOnSuccess() {
+    public void setOnSuccessful() {
         isSuccess = true;
         performAgainItemButton = null;
         enableButtons();

@@ -155,13 +155,13 @@ public class FileTransfer {
 
     private void runWorkThread() {
         executor.execute(() -> {
-            if (mainQueue.size() == 0) {
+            if (mainQueue.isEmpty()) {
                 return;
             }
             mainWindow.disableButtons();
             operationTable.disableButtons();
             isTransferActive = true;
-            while (mainQueue.size() != 0) {
+            while (!mainQueue.isEmpty()) {
                 final TransferItem item = mainQueue.poll();
                 currentTransferItem = item;
                 currentTransferItem.blockProcessing();
@@ -207,12 +207,12 @@ public class FileTransfer {
             }
             System.out.printf("Файл %s успешно скачен с сервера%n", transferItem.getSourcePath());
             fileWriter.close();
-            transferItem.setOnSuccess();
+            transferItem.setOnSuccessful();
             performedOperations++;
             operationTable.setCurrentOperationsCountLbl(performedOperations + "/" + totalOperations);
             mainWindow.refreshClientFilesList();
         } catch (IOException e) {
-            transferItem.setOnUnSuccess();
+            transferItem.setOnUnsuccessful();
             System.out.printf("Ошибка скачивания файла %s с сервера%n", transferItem.getSourcePath());
             e.printStackTrace();
         }
@@ -252,11 +252,11 @@ public class FileTransfer {
                 transferItem.setProgressIndicator((float) partsSend / partsOfFile);
             } while (partsSend != partsOfFile);
             System.out.printf("Файл %s успешно отправлен на сервер%n", transferItem.getSourcePath());
-            transferItem.setOnSuccess();
+            transferItem.setOnSuccessful();
             performedOperations++;
             operationTable.setCurrentOperationsCountLbl(performedOperations + "/" + totalOperations);
         } catch (IOException e) {
-            transferItem.setOnUnSuccess();
+            transferItem.setOnUnsuccessful();
             System.out.printf("Ошибка отправки файла %s на сервер%n", transferItem.getSourcePath());
             e.printStackTrace();
         }
