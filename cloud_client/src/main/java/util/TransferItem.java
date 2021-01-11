@@ -15,7 +15,6 @@ public class TransferItem {
     }
 
     private final String fileName;
-    private long fileSize;
     private final Path sourcePath;
     private final Path dstPath;
     private final Operation operation;
@@ -23,6 +22,7 @@ public class TransferItem {
     private final ProgressIndicator progressIndicator;
     private final Button filePathButton;
     private final Button deleteItemButton;
+    private long fileSize;
     private Button performAgainItemButton;
     private boolean isSuccess = false;
 

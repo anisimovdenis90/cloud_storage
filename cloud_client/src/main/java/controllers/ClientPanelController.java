@@ -31,7 +31,7 @@ public class ClientPanelController extends PanelController {
         try {
             pathField.setText(path.normalize().toAbsolutePath().toString());
             table.getItems().clear();
-            table.getItems().addAll(Files.list(path)
+            table.getItems().addAll(Files.list(path).parallel()
                     .filter(p -> {
                         try {
                             return !Files.isHidden(p);
@@ -46,10 +46,10 @@ public class ClientPanelController extends PanelController {
             table.sort();
         } catch (IOException e) {
             if (path.getParent() != null) {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "");
+                final Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "");
                 alert.setTitle("Подтверждение операции");
                 alert.setHeaderText("Не удалось обновить список файлов по текущему пути. Желаете перейти на каталог выше?");
-                Optional<ButtonType> result = alert.showAndWait();
+                final Optional<ButtonType> result = alert.showAndWait();
                 if (result.isPresent() && result.get().equals(ButtonType.OK)) {
                     updateList(path.getParent());
                 }

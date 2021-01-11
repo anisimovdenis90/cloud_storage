@@ -18,8 +18,8 @@ public class NetworkClient {
     private static final int DEFAULT_PORT = 8189;
 
     private static volatile NetworkClient instance;
-    private static ObjectEncoderOutputStream out;
-    private static ObjectDecoderInputStream in;
+    private ObjectEncoderOutputStream out;
+    private ObjectDecoderInputStream in;
     private Socket socket;
     private String userId;
 

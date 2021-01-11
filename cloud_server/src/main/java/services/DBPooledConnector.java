@@ -15,8 +15,8 @@ public class DBPooledConnector implements DBConnector {
     private final ReentrantLock lock;
     private final DBConnection connector;
     private final Semaphore semaphore;
-    private final boolean FREE_CONNECTION = true;
-    private final boolean BUSY_CONNECTION = false;
+    private static final boolean FREE_CONNECTION = true;
+    private static final boolean BUSY_CONNECTION = false;
 
     public DBPooledConnector(DBConnection connector, int LIMIT_OF_CONNECTIONS) {
         this.connector = connector;

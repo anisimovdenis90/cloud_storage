@@ -22,9 +22,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class MainWindowController implements Initializable {
 
@@ -465,16 +463,14 @@ public class MainWindowController implements Initializable {
         final Path sourcePath = Paths.get(currentDir, fileName);
         final Path destPath = Paths.get(serverTable.getCurrentPathStr());
         if (Files.isDirectory(sourcePath)) {
-//            final ArrayList<TransferItem> listToUpload = new ArrayList<>();
-            final ArrayList<Path> pathsToUpload = new ArrayList<>();
+            final List<Path> pathsToUpload = new LinkedList<>();
             try {
                 Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>() {
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                         System.out.println(file.toString());
                         pathsToUpload.add(file);
-//                        final Path destination = Paths.get(destPath.toString(), sourcePath.getParent().relativize(file.getParent()).toString());
-//                        listToUpload.add(new TransferItem(TransferItem.Operation.UPLOAD, file, destination));
+
                         return FileVisitResult.CONTINUE;
                     }
                 });
@@ -484,7 +480,7 @@ public class MainWindowController implements Initializable {
                     return;
                 }
                 if (FileTransfer.getInstance().checkQueueCapacity(pathsToUpload.size())) {
-                    final ArrayList<TransferItem> listToUpload = new ArrayList<>();
+                    final List<TransferItem> listToUpload = new LinkedList<>();
                     for (Path file : pathsToUpload) {
                         final Path destination = Paths.get(destPath.toString(), sourcePath.getParent().relativize(file.getParent()).toString());
                         listToUpload.add(new TransferItem(TransferItem.Operation.UPLOAD, file, destination));
@@ -498,7 +494,7 @@ public class MainWindowController implements Initializable {
                 showInfoAlert(String.format(errorMessage, sourcePath), Alert.AlertType.WARNING, true);
             }
         } else {
-            TransferItem item = new TransferItem(TransferItem.Operation.UPLOAD, sourcePath, destPath);
+            final TransferItem item = new TransferItem(TransferItem.Operation.UPLOAD, sourcePath, destPath);
             FileTransfer.getInstance().addItemToQueue(item);
         }
     }
@@ -597,7 +593,7 @@ public class MainWindowController implements Initializable {
             return;
         }
         if (clientPath != null) {
-            String newName = showTextInputDialog(clientPath.getFileName().toString(),
+            final String newName = showTextInputDialog(clientPath.getFileName().toString(),
                     "Переименование файла \"" + clientPath.getFileName() + "\"",
                     "Введите новое имя файла: "
             );
@@ -636,7 +632,7 @@ public class MainWindowController implements Initializable {
             return;
         }
         if (clientTableView.isFocused()) {
-            String newFolderName = showTextInputDialog("Новая папка",
+            final String newFolderName = showTextInputDialog("Новая папка",
                     "Создать каталог на клиенте ",
                     "Введите название папки: "
             );
@@ -651,7 +647,7 @@ public class MainWindowController implements Initializable {
                 }
             }
         } else {
-            String newFolderName = showTextInputDialog("Новая папка",
+            final String newFolderName = showTextInputDialog("Новая папка",
                     "Создать каталог на сервере ",
                     "Введите название папки: "
             );
@@ -669,24 +665,24 @@ public class MainWindowController implements Initializable {
     }
 
     public boolean showConfirmAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "");
+        final Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "");
         alert.setTitle("Подтверждение операции");
         alert.setHeaderText(message);
-        Optional<ButtonType> result = alert.showAndWait();
+        final Optional<ButtonType> result = alert.showAndWait();
         return result.isPresent() && result.get().equals(ButtonType.OK);
     }
 
     public String showTextInputDialog(String filename, String headerText, String contentText) {
-        TextInputDialog dialog = new TextInputDialog(filename);
+        final TextInputDialog dialog = new TextInputDialog(filename);
         dialog.setTitle("Введите данные");
         dialog.setHeaderText(headerText);
         dialog.setContentText(contentText);
-        Optional<String> result = dialog.showAndWait();
+        final Optional<String> result = dialog.showAndWait();
         return result.orElse(null);
     }
 
     public void showInfoAlert(String message, Alert.AlertType type, boolean needWait) {
-        Alert alert = new Alert(type, "", ButtonType.OK);
+        final Alert alert = new Alert(type, "", ButtonType.OK);
         alert.setTitle("Информационное окно");
         alert.setHeaderText(message);
         if (needWait) {

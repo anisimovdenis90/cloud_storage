@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -25,7 +26,7 @@ public class FileTransfer {
     private static final int LIMIT_OF_OPERATIONS = 300;
 
     private final ExecutorService executor;
-    private static FileTransfer instance;
+    private static volatile FileTransfer instance;
     private ArrayBlockingQueue<TransferItem> mainQueue;
     private int totalOperations;
     private int performedOperations;
@@ -49,7 +50,11 @@ public class FileTransfer {
 
     public static FileTransfer getInstance() {
         if (instance == null) {
-            instance = new FileTransfer();
+            synchronized (FileTransfer.class) {
+                if (instance == null) {
+                    instance = new FileTransfer();
+                }
+            }
         }
         return instance;
     }
@@ -93,21 +98,7 @@ public class FileTransfer {
     }
 
     public void addItemToQueue(TransferItem item) {
-        final int checkCounts = totalOperations + 1;
-        if (!checkQueueCapacity(checkCounts)) {
-            return;
-        }
-        if (!isTransferActive) {
-            totalOperationsSize = 0;
-            currentOperationsSize = 0;
-        }
-        totalOperationsSize += item.getFileSize();
-        item.blockTransfer();
-        totalOperations++;
-        operationTable.updateOperationTable(item);
-        setInfoLabels();
-        mainQueue.add(item);
-        runWorkThread();
+        addItemToQueue(Collections.singletonList(item));
     }
 
     public void reloadTransferItem(TransferItem item) {
