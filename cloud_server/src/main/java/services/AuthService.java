@@ -33,14 +33,16 @@ public class AuthService {
     public String getUserIDByLoginAndPassword(String login, String password) {
         String userID = null;
         Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
         try {
             connection = dbConnector.getConnection();
-            final PreparedStatement statement = connection.prepareStatement(
+            statement = connection.prepareStatement(
                     "SELECT id FROM users WHERE login = ? AND password = ?"
             );
             statement.setString(1, login);
             statement.setString(2, password);
-            final ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 userID = resultSet.getString("id");
             }
@@ -49,37 +51,51 @@ public class AuthService {
             e.printStackTrace();
         } finally {
             if (connection != null) dbConnector.closeConnection(connection);
+            try {
+                if (statement != null) statement.close();
+                if (resultSet != null) resultSet.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         return userID;
     }
 
     public synchronized void setIsLogin(String id, boolean isLogin) {
         Connection connection = null;
+        PreparedStatement statement = null;
         try {
             connection = dbConnector.getConnection();
-            final PreparedStatement statement = connection.prepareStatement(
+            statement = connection.prepareStatement(
                     "UPDATE users SET isLogin = ? WHERE id = ?"
             );
             statement.setInt(1, isLogin ? 1 : 0);
             statement.setString(2, id);
-            statement.execute();
+            statement.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Ошибка изменения данных в базе!");
             e.printStackTrace();
         } finally {
             if (connection != null) dbConnector.closeConnection(connection);
+            try {
+                if (statement != null) statement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public boolean isLogin(String id) {
         Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
         try {
             connection = dbConnector.getConnection();
-            final PreparedStatement statement = connection.prepareStatement(
+            statement = connection.prepareStatement(
                     "SELECT login FROM users WHERE id = ? AND isLogin = 1"
             );
             statement.setString(1, id);
-            final ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 return true;
             }
@@ -88,19 +104,27 @@ public class AuthService {
             e.printStackTrace();
         } finally {
             if (connection != null) dbConnector.closeConnection(connection);
+            try {
+                if (statement != null) statement.close();
+                if (resultSet != null) resultSet.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         return false;
     }
 
     public boolean checkIsUsedUserId(String login) {
         Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
         try {
             connection = dbConnector.getConnection();
-            final PreparedStatement statement = connection.prepareStatement(
+            statement = connection.prepareStatement(
                     "SELECT id FROM users WHERE login = ?"
             );
             statement.setString(1, login);
-            final ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 return false;
             }
@@ -109,25 +133,37 @@ public class AuthService {
             e.printStackTrace();
         } finally {
             if (connection != null) dbConnector.closeConnection(connection);
+            try {
+                if (statement != null) statement.close();
+                if (resultSet != null) resultSet.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         return true;
     }
 
     public synchronized void registerNewUser(String login, String password) {
         Connection connection = null;
+        PreparedStatement statement = null;
         try {
             connection = dbConnector.getConnection();
-            final PreparedStatement statement = connection.prepareStatement(
+            statement = connection.prepareStatement(
                     "INSERT INTO users (login, password) VALUES (?, ?)"
             );
             statement.setString(1, login);
             statement.setString(2, password);
-            statement.execute();
+            statement.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Ошибка изменения данных в базе!");
             e.printStackTrace();
         } finally {
             if (connection != null) dbConnector.closeConnection(connection);
+            try {
+                if (statement != null) statement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -137,17 +173,23 @@ public class AuthService {
 
     private synchronized void resetIsLogin() {
         Connection connection = null;
+        PreparedStatement statement = null;
         try {
             connection = dbConnector.getConnection();
-            final PreparedStatement statement = connection.prepareStatement(
+            statement = connection.prepareStatement(
                     "UPDATE users SET isLogin = 0"
             );
-            statement.execute();
+            statement.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Ошибка изменения данных в базе!");
             e.printStackTrace();
         } finally {
             if (connection != null) dbConnector.closeConnection(connection);
+            try {
+                if (statement != null) statement.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
