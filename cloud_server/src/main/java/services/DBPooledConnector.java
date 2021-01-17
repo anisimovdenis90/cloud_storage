@@ -28,7 +28,7 @@ public class DBPooledConnector implements DBConnector {
     }
 
     public void start() {
-        Optional<Connection> connectionOptional = createConnection();
+        final Optional<Connection> connectionOptional = createConnection();
         connectionOptional.ifPresent(connection -> connectionsPool.put(connection, FREE_CONNECTION));
         System.out.println("Количество подключений " + connectionsPool.size());
     }
@@ -105,7 +105,7 @@ public class DBPooledConnector implements DBConnector {
 
     private Optional<Connection> createConnection() {
         try {
-            Connection connection = connector.createConnection();
+            final Connection connection = connector.createConnection();
             System.out.println("Создано новое подключение к базе данных");
             return Optional.of(connection);
         } catch (SQLException e) {

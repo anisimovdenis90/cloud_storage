@@ -41,8 +41,8 @@ public class ServerPanelController extends PanelController {
                 table.sort();
             });
         } else if (receivedCommand instanceof ErrorCommand) {
-            String message = ((ErrorCommand) receivedCommand).getErrorMessage();
-            Alert alert = new Alert(Alert.AlertType.WARNING, message, ButtonType.OK);
+            final String message = ((ErrorCommand) receivedCommand).getErrorMessage();
+            final Alert alert = new Alert(Alert.AlertType.WARNING, message, ButtonType.OK);
             alert.showAndWait();
         }
     }
@@ -76,8 +76,8 @@ public class ServerPanelController extends PanelController {
     }
 
     private List<FileInfo> setFileIconFromImage(List<FileInfo> list) {
-        Image folderIcon = new Image("img/folder.png");
-        Image fileIcon = new Image("img/file.png");
+        final Image folderIcon = new Image("img/folder.png");
+        final Image fileIcon = new Image("img/file.png");
         list.forEach(fileInfo -> {
             if (fileInfo.getType().equals(FileInfo.FileType.DIRECTORY)) {
                 fileInfo.setFileIcon(new ImageView(folderIcon));

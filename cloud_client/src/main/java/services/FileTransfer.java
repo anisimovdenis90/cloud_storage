@@ -86,7 +86,7 @@ public class FileTransfer {
             totalOperationsSize = 0;
             currentOperationsSize = 0;
         }
-        for (TransferItem transferItem : list) {
+        for (final TransferItem transferItem : list) {
             totalOperationsSize += transferItem.getFileSize();
             transferItem.blockTransfer();
         }

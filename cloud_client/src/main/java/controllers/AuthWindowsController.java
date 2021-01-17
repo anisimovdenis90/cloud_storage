@@ -70,12 +70,12 @@ public class AuthWindowsController implements Initializable {
         if (!checkLengthsTextFields()) {
             return;
         }
-        String login = loginText.getText().trim();
-        String password = passwordText.getText().trim();
+        final String login = loginText.getText().trim();
+        final String password = passwordText.getText().trim();
         NetworkClient.getInstance().sendCommandToServer(new AuthCommand(login, password));
         logInButton.setDisable(true);
         setLabelError("Ожидание ответа от сервера...");
-        AuthCommand command = (AuthCommand) NetworkClient.getInstance().readCommandFromServer();
+        final AuthCommand command = (AuthCommand) NetworkClient.getInstance().readCommandFromServer();
         if (command.isAuthorized()) {
             setLabelOk("Вход выполнен");
             NetworkClient.getInstance().setUserId(command.getUserID());
@@ -97,12 +97,12 @@ public class AuthWindowsController implements Initializable {
             setLabelError("Пароли не совпадают!");
             return;
         }
-        String login = loginText.getText().trim();
-        String password = passwordText.getText().trim();
+        final String login = loginText.getText().trim();
+        final String password = passwordText.getText().trim();
         NetworkClient.getInstance().sendCommandToServer(new SignUpCommand(login, password));
         signUpButton.setDisable(true);
         setLabelError("Ожидание ответа от сервера...");
-        SignUpCommand command = (SignUpCommand) NetworkClient.getInstance().readCommandFromServer();
+        final SignUpCommand command = (SignUpCommand) NetworkClient.getInstance().readCommandFromServer();
         if (command.isSignUp()) {
             setLabelOk("Регистрация выполнена успешно. Переход на окно авторизации");
             runWithPause(1500, event -> openSignInScreen());
@@ -157,12 +157,12 @@ public class AuthWindowsController implements Initializable {
     }
 
     private void showNewStage(Stage stage, String FXMLFile, String title, EventHandler<WindowEvent> onCloseEvent) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader();
+        final FXMLLoader fxmlLoader = new FXMLLoader();
         fxmlLoader.setLocation(getClass().getResource(FXMLFile));
-        Parent root = fxmlLoader.load();
-        AuthWindowsController controller = fxmlLoader.getController();
+        final Parent root = fxmlLoader.load();
+        final AuthWindowsController controller = fxmlLoader.getController();
         NetworkClient.getInstance().setAuthWindowsController(controller);
-        Scene newScene = new Scene(root);
+        final Scene newScene = new Scene(root);
         newScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
             if (event.getCode().equals(KeyCode.ENTER)) {
                 if (title.equals("Регистрация")) {
@@ -215,11 +215,11 @@ public class AuthWindowsController implements Initializable {
 
     private void openMainWindow() {
         try {
-            Stage mainWindow = new Stage();
-            FXMLLoader loader = new FXMLLoader();
+            final Stage mainWindow = new Stage();
+            final FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("/fxml/mainWindow.fxml"));
-            Scene mainScene = new Scene(loader.load());
-            MainWindowController controller = loader.getController();
+            final Scene mainScene = new Scene(loader.load());
+            final MainWindowController controller = loader.getController();
             mainScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
                 if (event.getCode().equals(KeyCode.DELETE)) {
                     controller.deleteButtonAction();

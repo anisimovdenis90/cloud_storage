@@ -94,8 +94,8 @@ public class OperationTableController {
 
         operationTable.setPlaceholder(new Label("Очередь операций пуста"));
 
-        ContextMenu contextMenu = new ContextMenu();
-        MenuItem clearAllItems = new MenuItem("Очистить очередь");
+        final ContextMenu contextMenu = new ContextMenu();
+        final MenuItem clearAllItems = new MenuItem("Очистить очередь");
         clearAllItems.setOnAction(event -> {
             if (!clearQueue.isDisabled()) {
                 clearOperationTable();
