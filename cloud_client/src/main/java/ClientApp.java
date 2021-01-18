@@ -18,13 +18,13 @@ public class ClientApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader fxmlLoader = new FXMLLoader();
+        final FXMLLoader fxmlLoader = new FXMLLoader();
         fxmlLoader.setLocation(getClass().getResource("/fxml/logInScreen.fxml"));
-        Parent root = fxmlLoader.load();
-        AuthWindowsController controller = fxmlLoader.getController();
+        final Parent root = fxmlLoader.load();
+        final AuthWindowsController controller = fxmlLoader.getController();
         NetworkClient.getInstance().setAuthWindowsController(controller);
         NetworkClient.getInstance().start();
-        Scene scene = new Scene(root);
+        final Scene scene = new Scene(root);
         scene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
             if (event.getCode().equals(KeyCode.ENTER)) {
                 controller.startAuthentication();
