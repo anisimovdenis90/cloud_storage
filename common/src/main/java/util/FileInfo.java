@@ -63,6 +63,23 @@ public class FileInfo implements Serializable {
         }
     }
 
+    public FileInfo(Path path, Image image) {
+        final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        try {
+            this.fileIcon = new ImageView(image);
+            this.fileName = path.getFileName().toString();
+            this.fileSize = Files.size(path);
+            this.type = Files.isDirectory(path) ? FileType.DIRECTORY : FileType.FILE;
+            if (this.type == FileType.DIRECTORY) {
+                this.fileSize = -1L;
+            }
+            this.typeName = type.getName();
+            this.lastModified = LocalDateTime.ofInstant(Files.getLastModifiedTime(path).toInstant(), ZoneOffset.ofHours(3)).format(dtf);
+        } catch (IOException e) {
+            throw new RuntimeException("Невозможно создать список файлов из папки " + path.toString());
+        }
+    }
+
     private ImageView getIconImageFX(Path path) {
         final ImageIcon icon = (ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(path.toFile());
         final BufferedImage bimg = (BufferedImage) icon.getImage();

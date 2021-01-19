@@ -304,12 +304,12 @@ public class MainWindowController implements Initializable {
         });
         newCatalogClientItem.setOnAction(event -> {
             if (!newFolderButton.isDisabled()) {
-                createNewDirAction();
+                createNewDirButtonAction();
             }
         });
         newCatalogServerItem.setOnAction(event -> {
             if (!newFolderButton.isDisabled()) {
-                createNewDirAction();
+                createNewDirButtonAction();
             }
         });
         refreshClientItem.setOnAction(event -> refreshClientFilesList());
@@ -406,7 +406,7 @@ public class MainWindowController implements Initializable {
             final FilesListInDirRequest filesListInServerDir = (FilesListInDirRequest) object;
             System.out.println("Список файлов в папке " + fileInfo.getFileName() + " на сервере получен");
             if (FileTransfer.getInstance().checkQueueCapacity(filesListInServerDir.getFilesList().size())) {
-                final ArrayList<TransferItem> transferList = new ArrayList<>();
+                final List<TransferItem> transferList = new LinkedList<>();
                 for (FileInfo file : filesListInServerDir.getFilesList()) {
                     final Path checkedPath = Paths.get(currentClientDir, file.getFileDir(), file.getFileName());
                     if (checkExistsFile(checkedPath)) {
@@ -626,7 +626,7 @@ public class MainWindowController implements Initializable {
         }
     }
 
-    public void createNewDirAction() {
+    public void createNewDirButtonAction() {
         if (!clientTableView.isFocused() && !serverTableView.isFocused()) {
             showInfoAlert("Для создания папки выберите окно.", Alert.AlertType.INFORMATION, false);
             return;
@@ -697,7 +697,7 @@ public class MainWindowController implements Initializable {
     }
 
     public void refreshClientFilesList() {
-        Platform.runLater(() -> clientTable.updateList(Paths.get(clientTable.getCurrentPathStr())));
+        clientTable.updateList(Paths.get(clientTable.getCurrentPathStr()));
     }
 
     public void clearQueueButtonAction() {
