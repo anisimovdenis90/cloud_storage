@@ -104,7 +104,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                     System.out.println(file.toString());
                     final Path fileDirPath = Paths.get(dirPath.getFileName().toString(), dirPath.relativize(file.getParent()).toString());
                     System.out.println("Полученный путь: " + fileDirPath);
-                    final FileInfo fileInfo = new FileInfo(file, false);
+                    final FileInfo fileInfo = new FileInfo(file);
                     fileInfo.setFileDir(fileDirPath.toString());
                     list.add(fileInfo);
                     return FileVisitResult.CONTINUE;
@@ -134,14 +134,14 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                 final Path rootClientPath = Paths.get(clientDir);
                 final Path folder = Paths.get(rootClientDirectory);
                 filesList = new FilesListCommand(Files.list(folder)
-                        .map((Path path) -> new FileInfo(path, false))
+                        .map(FileInfo::new)
                         .collect(Collectors.toList()), rootClientPath);
                 filesList.setRootServerPath(rootClientPath);
             } else {
                 currentClientDir = command.getCurrentPath();
                 final Path currentClientPath = Paths.get(serverDir, currentClientDir);
                 filesList = new FilesListCommand(Files.list(currentClientPath)
-                        .map((Path path) -> new FileInfo(path, false))
+                        .map(FileInfo::new)
                         .collect(Collectors.toList()), Paths.get(currentClientDir));
             }
             ctx.writeAndFlush(filesList);

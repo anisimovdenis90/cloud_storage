@@ -182,7 +182,7 @@
                               </ImageView>
                            </graphic>
                         </Button>
-                        <Button fx:id="newFolderButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#createNewDirAction" prefHeight="35.0" prefWidth="230.0" style="-fx-background-color: #2196f3;" text="Создать папку" textFill="WHITE" HBox.hgrow="ALWAYS">
+                        <Button fx:id="newFolderButton" focusTraversable="false" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#createNewDirButtonAction" prefHeight="35.0" prefWidth="230.0" style="-fx-background-color: #2196f3;" text="Создать папку" textFill="WHITE" HBox.hgrow="ALWAYS">
                            <font>
                               <Font name="System Bold" size="14.0" />
                            </font>

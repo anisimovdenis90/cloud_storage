@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="e7aa344d-f382-4c08-9a85-f61b950103d8" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/cloud_client/src/main/java/controllers/MainWindowController.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud_client/src/main/java/controllers/MainWindowController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cloud_client/src/main/java/controllers/OperationTableController.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud_client/src/main/java/controllers/OperationTableController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cloud_client/src/main/java/services/NetworkClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud_client/src/main/java/services/NetworkClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cloud_client/src/main/java/util/FinishedCallBack.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cloud_client/src/main/java/util/TransferItem.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud_client/src/main/java/util/TransferItem.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cloud_client/src/main/resources/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/cloud_client/src/main/resources/css/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cloud_client/src/main/resources/fxml/mainWindow.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/cloud_client/src/main/resources/fxml/mainWindow.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cloud_server/src/main/java/netty/handlers/ClientHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud_server/src/main/java/netty/handlers/ClientHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cloud_storage_db.db" beforeDir="false" afterPath="$PROJECT_DIR$/cloud_storage_db.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/src/main/java/util/FileInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/main/java/util/FileInfo.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Denis Anisimov &lt;anisimov.denis.90@gmail.com&gt;" />
+      </list>
+    </option>
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="develop" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHome" value="C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2019.3.2\plugins\maven\lib\maven3" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectId" id="1gN5GFm5bRsb6aY68MXS9fPYSw5" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="extract.method.default.visibility" value="private" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RunManager" selected="Application.ClientApp">
+    <configuration name="ClientApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="ClientApp" />
+      <module name="cloud_client" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ServerApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="ServerApp" />
+      <module name="cloud_server" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.ClientApp" />
+        <item itemvalue="Application.ServerApp" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e7aa344d-f382-4c08-9a85-f61b950103d8" name="Default Changelist" comment="" />
+      <created>1597942111582</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1597942111582</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Отключение дополнительных кнопок во время операции">
+      <created>1597943299608</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1597943299608</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Добавлено:&#10;- открытие файлов на клиенте по двойному клику&#10;- отображение иконок файлов и папок&#10;- кнопка Создать папку&#10;- возможность работы с каталогами (пока только переименование, удаление) на клиенте и сервере&#10;- оключение кнопки Зарегестрироваться в окне регистрации после регистарции&#10;&#10;Исправлено:&#10;- тип с int на long переменных в FileMessage&#10;- пересчет размера файлов (ранее округлялся до ближайщего целого)">
+      <created>1598370761655</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1598370761655</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Отключение дополнительных кнопок во время операции" />
+    <MESSAGE value="Добавлено:&#10;- открытие файлов на клиенте по двойному клику&#10;- отображение иконок файлов и папок&#10;- кнопка Создать папку&#10;- возможность работы с каталогами (пока только переименование, удаление) на клиенте и сервере&#10;- оключение кнопки Зарегестрироваться в окне регистрации после регистарции&#10;&#10;Исправлено:&#10;- тип с int на long переменных в FileMessage&#10;- пересчет размера файлов (ранее округлялся до ближайщего целого)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Добавлено:&#10;- открытие файлов на клиенте по двойному клику&#10;- отображение иконок файлов и папок&#10;- кнопка Создать папку&#10;- возможность работы с каталогами (пока только переименование, удаление) на клиенте и сервере&#10;- оключение кнопки Зарегестрироваться в окне регистрации после регистарции&#10;&#10;Исправлено:&#10;- тип с int на long переменных в FileMessage&#10;- пересчет размера файлов (ранее округлялся до ближайщего целого)" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="765" y="221" key="#com.intellij.ide.util.MemberChooser" timestamp="1598382795719">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="765" y="221" key="#com.intellij.ide.util.MemberChooser/0.0.1920.1040@0.0.1920.1040" timestamp="1598382795719" />
+    <state x="376" y="0" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1598371560002">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="376" y="0" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1598371560002" />
+    <state x="715" y="223" key="#xdebugger.evaluate" timestamp="1598362851394">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="715" y="223" key="#xdebugger.evaluate/0.0.1920.1040@0.0.1920.1040" timestamp="1598362851394" />
+    <state x="517" y="0" key="CommitChangelistDialog2" timestamp="1598370760437">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="517" y="0" key="CommitChangelistDialog2/0.0.1920.1040@0.0.1920.1040" timestamp="1598370760437" />
+    <state width="1877" height="274" key="GridCell.Tab.0.bottom" timestamp="1598388589428">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="274" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1598388589428" />
+    <state width="1877" height="274" key="GridCell.Tab.0.center" timestamp="1598388589428">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="274" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1598388589428" />
+    <state width="1877" height="274" key="GridCell.Tab.0.left" timestamp="1598388589427">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="274" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1598388589427" />
+    <state width="1877" height="274" key="GridCell.Tab.0.right" timestamp="1598388589428">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="274" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1598388589428" />
+    <state width="1877" height="338" key="GridCell.Tab.1.bottom" timestamp="1598362984539">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="338" key="GridCell.Tab.1.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1598362984539" />
+    <state width="1877" height="338" key="GridCell.Tab.1.center" timestamp="1598362984539">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="338" key="GridCell.Tab.1.center/0.0.1920.1040@0.0.1920.1040" timestamp="1598362984539" />
+    <state width="1877" height="338" key="GridCell.Tab.1.left" timestamp="1598362984539">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="338" key="GridCell.Tab.1.left/0.0.1920.1040@0.0.1920.1040" timestamp="1598362984539" />
+    <state width="1877" height="338" key="GridCell.Tab.1.right" timestamp="1598362984539">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="338" key="GridCell.Tab.1.right/0.0.1920.1040@0.0.1920.1040" timestamp="1598362984539" />
+    <state x="552" y="253" key="Vcs.Push.Dialog.v2" timestamp="1598370765469">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="552" y="253" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1598370765469" />
+    <state x="690" y="281" key="extract.method.dialog" timestamp="1598025662291">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="690" y="281" key="extract.method.dialog/0.0.1920.1040@0.0.1920.1040" timestamp="1598025662291" />
+  </component>
+</project>

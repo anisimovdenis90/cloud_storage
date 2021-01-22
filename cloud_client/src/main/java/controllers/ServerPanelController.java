@@ -5,16 +5,19 @@ import commands.FilesListCommand;
 import commands.GetFilesListCommand;
 import javafx.application.Platform;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import services.NetworkClient;
 import util.FileInfo;
+import util.FileInfoImageViewSetter;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ServerPanelController extends PanelController {
+
+    private final ExecutorService fileIconExecutor;
 
     public ServerPanelController(TableView<FileInfo> table,
                                  TableColumn<FileInfo, String> iconFileColumn,
@@ -24,6 +27,11 @@ public class ServerPanelController extends PanelController {
                                  TableColumn<FileInfo, String> fileDateColumn,
                                  TextField pathField) {
         super(table, iconFileColumn, fileTypeColumn, fileNameColumn, fileSizeColumn, fileDateColumn, pathField);
+        fileIconExecutor = Executors.newSingleThreadExecutor(runnable -> {
+            Thread thread = new Thread(runnable);
+            thread.setDaemon(true);
+            return thread;
+        });
     }
 
     @Override
@@ -34,12 +42,15 @@ public class ServerPanelController extends PanelController {
         if (receivedCommand instanceof FilesListCommand) {
             System.out.println("Список файлов с сервера получен");
             final FilesListCommand command = (FilesListCommand) receivedCommand;
+            final List<FileInfo> list = command.getFilesList();
             Platform.runLater(() -> {
                 pathField.setText(command.getCurrentServerPath());
                 table.getItems().clear();
-                table.getItems().addAll(setFileIconFromImage(command.getFilesList()));
+                table.getItems().addAll(list);
                 table.sort();
+                table.scrollTo(0);
             });
+            fileIconExecutor.execute(() -> FileInfoImageViewSetter.setSimpleImageView(list, null));
         } else if (receivedCommand instanceof ErrorCommand) {
             final String message = ((ErrorCommand) receivedCommand).getErrorMessage();
             final Alert alert = new Alert(Alert.AlertType.WARNING, message, ButtonType.OK);
@@ -70,21 +81,10 @@ public class ServerPanelController extends PanelController {
         Platform.runLater(() -> {
             pathField.setText(rootPath.toString());
             table.getItems().clear();
-            table.getItems().addAll(setFileIconFromImage(filesList));
+            table.getItems().addAll(filesList);
             table.sort();
+            table.scrollTo(0);
         });
-    }
-
-    private List<FileInfo> setFileIconFromImage(List<FileInfo> list) {
-        final Image folderIcon = new Image("img/folder.png");
-        final Image fileIcon = new Image("img/file.png");
-        list.forEach(fileInfo -> {
-            if (fileInfo.getType().equals(FileInfo.FileType.DIRECTORY)) {
-                fileInfo.setFileIcon(new ImageView(folderIcon));
-            } else {
-                fileInfo.setFileIcon(new ImageView(fileIcon));
-            }
-        });
-        return list;
+        fileIconExecutor.execute(() -> FileInfoImageViewSetter.setSimpleImageView(filesList, null));
     }
 }

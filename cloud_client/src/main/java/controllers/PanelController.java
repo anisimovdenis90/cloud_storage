@@ -8,6 +8,8 @@ import util.FileSizeLongToStringFormatter;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public abstract class PanelController {
 
@@ -73,7 +75,7 @@ public abstract class PanelController {
                         } else if (item == -1L) {
                             setText("-");
                         } else {
-                            String text = FileSizeLongToStringFormatter.format(item);
+                            final String text = FileSizeLongToStringFormatter.format(item);
                             setText(text);
                         }
                     }

@@ -1,11 +1,7 @@
 package util;
 
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
@@ -13,8 +9,6 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-
-import static javafx.embed.swing.SwingFXUtils.toFXImage;
 
 public class FileInfo implements Serializable {
 
@@ -35,21 +29,19 @@ public class FileInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private transient ImageView fileIcon;
+    private transient Path path;
+    private final String lastModified;
     private final FileType type;
     private final String typeName;
     private String fileName;
-    private long fileSize;
-    private final String lastModified;
     private String fileDir;
+    private long fileSize;
 
-    public FileInfo(Path path, boolean needIcon) {
+    public FileInfo(Path path, ImageView fileIcon) {
         final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         try {
-            if (needIcon) {
-                this.fileIcon = getIconImageFX(path);
-            } else {
-                this.fileIcon = null;
-            }
+            this.path = path;
+            this.fileIcon = fileIcon;
             this.fileName = path.getFileName().toString();
             this.fileSize = Files.size(path);
             this.type = Files.isDirectory(path) ? FileType.DIRECTORY : FileType.FILE;
@@ -63,11 +55,8 @@ public class FileInfo implements Serializable {
         }
     }
 
-    private ImageView getIconImageFX(Path path) {
-        final ImageIcon icon = (ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(path.toFile());
-        final BufferedImage bimg = (BufferedImage) icon.getImage();
-        final Image imgfx = toFXImage(bimg, null);
-        return new ImageView(imgfx);
+    public FileInfo(Path path) {
+        this(path, null);
     }
 
     public void setFileDir(String fileDir) {
@@ -96,6 +85,10 @@ public class FileInfo implements Serializable {
 
     public String getTypeName() {
         return typeName;
+    }
+
+    public Path getPath() {
+        return path;
     }
 
     public FileType getType() {
