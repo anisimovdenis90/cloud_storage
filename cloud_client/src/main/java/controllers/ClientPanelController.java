@@ -5,11 +5,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import util.FileInfo;
+import util.FileInfoImageViewSetter;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,15 +16,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static javafx.embed.swing.SwingFXUtils.toFXImage;
 
 public class ClientPanelController extends PanelController {
 
-    private static final Map<String, Image> imageCash = new HashMap<>();
+    private final ExecutorService fileIconExecutor;
     private Desktop desktop;
 
     private static final Predicate<Path> pathPredicate = p -> {
@@ -38,15 +37,6 @@ public class ClientPanelController extends PanelController {
         return false;
     };
 
-    private static Function<Path, FileInfo> fileInfoFunction = path1 -> {
-        if (Files.isDirectory(path1)) {
-            return new FileInfo(path1, getImageFromCash("directory", path1));
-        } else {
-            String extension = getFileExtensionFromPath(path1);
-            return new FileInfo(path1, getImageFromCash(extension, path1));
-        }
-    };
-
     public ClientPanelController(TableView<FileInfo> table,
                                  TableColumn<FileInfo, String> iconFileColumn,
                                  TableColumn<FileInfo, String> fileTypeColumn,
@@ -55,6 +45,11 @@ public class ClientPanelController extends PanelController {
                                  TableColumn<FileInfo, String> fileDateColumn,
                                  TextField pathField) {
         super(table, iconFileColumn, fileTypeColumn, fileNameColumn, fileSizeColumn, fileDateColumn, pathField);
+        fileIconExecutor = Executors.newSingleThreadExecutor(runnable -> {
+            Thread thread = new Thread(runnable);
+            thread.setDaemon(true);
+            return thread;
+        });
     }
 
     @Override
@@ -62,14 +57,16 @@ public class ClientPanelController extends PanelController {
         try {
             final List<FileInfo> fileInfoList = Files.list(path)
                     .filter(pathPredicate)
-                    .map(fileInfoFunction)
+                    .map(FileInfo::new)
                     .collect(Collectors.toList());
             Platform.runLater(() -> {
                 pathField.setText(path.normalize().toAbsolutePath().toString());
                 table.getItems().clear();
                 table.getItems().addAll(fileInfoList);
                 table.sort();
+                table.scrollTo(0);
             });
+            fileIconExecutor.execute(() -> FileInfoImageViewSetter.setImageViewFromFile(fileInfoList, table::refresh));
         } catch (IOException e) {
             if (path.getParent() != null) {
                 final Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "");
@@ -84,33 +81,6 @@ public class ClientPanelController extends PanelController {
                 alert.showAndWait();
             }
         }
-    }
-
-    private static Image getImageFromCash(String key, Path path) {
-        Image image = imageCash.get(key);
-        if (image == null) {
-            image = createImageFromPath(path);
-            imageCash.put(key, image);
-        }
-        return image;
-    }
-
-    private static String getFileExtensionFromPath(Path path) {
-        final int i = path.getFileName().toString().lastIndexOf(".");
-        if (i > 0) {
-            String s = path.getFileName().toString().substring(i);
-            if (s.equals(".exe")) {
-                return path.getFileName().toString();
-            }
-            return s;
-        }
-        return "";
-    }
-
-    private static Image createImageFromPath(Path path) {
-        final ImageIcon icon = (ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(path.toFile());
-        final BufferedImage bimg = (BufferedImage) icon.getImage();
-        return toFXImage(bimg, null);
     }
 
     @Override

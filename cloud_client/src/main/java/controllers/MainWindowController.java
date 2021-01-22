@@ -22,7 +22,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
 
 public class MainWindowController implements Initializable {
 
@@ -256,7 +259,7 @@ public class MainWindowController implements Initializable {
         ContextMenu clientContextMenu = new ContextMenu();
         ContextMenu serverContextMenu = new ContextMenu();
         MenuItem downloadItem = new MenuItem("Скачать");
-        MenuItem openItem = new MenuItem("Показать штатно");
+        MenuItem openItem = new MenuItem("Просмотреть в проводнике");
         MenuItem uploadItem = new MenuItem("Отправить в облако");
         MenuItem newCatalogClientItem = new MenuItem("Создать папку");
         MenuItem newCatalogServerItem = new MenuItem("Создать папку");

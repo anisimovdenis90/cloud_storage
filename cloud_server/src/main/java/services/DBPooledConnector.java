@@ -10,21 +10,27 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class DBPooledConnector implements DBConnector {
 
+    private static final int DEFAULT_LIMIT_OF_CONNECTIONS = 5;
+    private static final boolean BUSY_CONNECTION = false;
+    private static final boolean FREE_CONNECTION = true;
+
     private final int LIMIT_OF_CONNECTIONS;
     private final Map<Connection, Boolean> connectionsPool;
-    private final ReentrantLock lock;
     private final DBConnection connector;
+    private final ReentrantLock lock;
     private final Semaphore semaphore;
-    private static final boolean FREE_CONNECTION = true;
-    private static final boolean BUSY_CONNECTION = false;
 
-    public DBPooledConnector(DBConnection connector, int LIMIT_OF_CONNECTIONS) {
+    public DBPooledConnector(DBConnection connector, int connectionsLimit) {
         this.connector = connector;
-        this.LIMIT_OF_CONNECTIONS = LIMIT_OF_CONNECTIONS;
+        this.LIMIT_OF_CONNECTIONS = connectionsLimit;
         connectionsPool = new ConcurrentHashMap<>();
-        semaphore = new Semaphore(LIMIT_OF_CONNECTIONS, true);
+        semaphore = new Semaphore(connectionsLimit, true);
         lock = new ReentrantLock();
         start();
+    }
+
+    public DBPooledConnector(DBConnection connector) {
+        this(connector, DEFAULT_LIMIT_OF_CONNECTIONS);
     }
 
     public void start() {
