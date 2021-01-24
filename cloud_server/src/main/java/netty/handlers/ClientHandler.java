@@ -11,8 +11,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -26,7 +27,6 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     private final String userId;
     private final String rootClientDirectory;
     private final String clientDir;
-    private String currentClientDir;
 
     private FileOutputStream fileWriter;
     private Path wroteFilePath;
@@ -97,7 +97,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         System.out.println("Запрос на список файлов в папке: " + command.getServerPath());
         final Path dirPath = Paths.get(serverDir, command.getServerPath());
         try {
-            final ArrayList<FileInfo> list = new ArrayList<>();
+            final List<FileInfo> list = new LinkedList<>();
             Files.walkFileTree(dirPath, new SimpleFileVisitor<Path>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
@@ -138,7 +138,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                         .collect(Collectors.toList()), rootClientPath);
                 filesList.setRootServerPath(rootClientPath);
             } else {
-                currentClientDir = command.getCurrentPath();
+                final String currentClientDir = command.getCurrentPath();
                 final Path currentClientPath = Paths.get(serverDir, currentClientDir);
                 filesList = new FilesListCommand(Files.list(currentClientPath)
                         .map(FileInfo::new)
