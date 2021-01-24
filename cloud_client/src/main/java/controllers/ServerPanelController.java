@@ -50,7 +50,7 @@ public class ServerPanelController extends PanelController {
                 table.sort();
                 table.scrollTo(0);
             });
-            fileIconExecutor.execute(() -> FileInfoImageViewSetter.setSimpleImageView(list, null));
+            fileIconExecutor.execute(() -> FileInfoImageViewSetter.setSimpleImageView(list, () -> Platform.runLater(table::refresh)));
         } else if (receivedCommand instanceof ErrorCommand) {
             final String message = ((ErrorCommand) receivedCommand).getErrorMessage();
             final Alert alert = new Alert(Alert.AlertType.WARNING, message, ButtonType.OK);
@@ -85,6 +85,6 @@ public class ServerPanelController extends PanelController {
             table.sort();
             table.scrollTo(0);
         });
-        fileIconExecutor.execute(() -> FileInfoImageViewSetter.setSimpleImageView(filesList, null));
+        fileIconExecutor.execute(() -> FileInfoImageViewSetter.setSimpleImageView(filesList, () -> Platform.runLater(table::refresh)));
     }
 }

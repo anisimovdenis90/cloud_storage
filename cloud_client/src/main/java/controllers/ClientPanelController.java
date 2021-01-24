@@ -3,7 +3,6 @@ package controllers;
 import javafx.application.Platform;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import util.FileInfo;
 import util.FileInfoImageViewSetter;
 
@@ -12,16 +11,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
 
 public class ClientPanelController extends PanelController {
 
@@ -66,7 +61,7 @@ public class ClientPanelController extends PanelController {
                 table.sort();
                 table.scrollTo(0);
             });
-            fileIconExecutor.execute(() -> FileInfoImageViewSetter.setImageViewFromFile(fileInfoList, table::refresh));
+            fileIconExecutor.execute(() -> FileInfoImageViewSetter.setImageViewFromFile(fileInfoList, () -> Platform.runLater(table::refresh)));
         } catch (IOException e) {
             if (path.getParent() != null) {
                 final Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "");
