@@ -318,7 +318,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             try {
                 Files.createDirectories(path);
             } catch (IOException e) {
-                System.out.println("Ошибка создания папки клиента");
+                System.out.printf("Ошибка создания папки клиента %s%n", userId);
                 e.printStackTrace();
             }
         }

@@ -72,13 +72,14 @@ public class NetworkClient {
         if (repeatConnectionThread == null || repeatConnectionThread.getState().equals(Thread.State.TERMINATED)) {
             repeatConnectionThread = new Thread(() -> {
                 final int counts = 10;
+                final int SLEEP_TIME = 1000;
                 final String message = "Отсутствует связь с сервером, повторное подключение через %d...%n";
                 while (!connectionSuccess) {
                     for (int i = 0; i < counts; i++) {
                         try {
                             System.out.printf(message, (counts - i));
                             authWindowsController.setLabelError(String.format(message, (counts - i)));
-                            Thread.sleep(1000);
+                            Thread.sleep(SLEEP_TIME);
                         } catch (InterruptedException interruptedException) {
                             interruptedException.printStackTrace();
                         }

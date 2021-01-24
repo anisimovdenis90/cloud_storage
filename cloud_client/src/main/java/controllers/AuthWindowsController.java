@@ -70,6 +70,7 @@ public class AuthWindowsController implements Initializable {
         if (!checkLengthsTextFields()) {
             return;
         }
+        final int PAUSE_TIME = 200;
         final String login = loginText.getText().trim();
         final String password = passwordText.getText().trim();
         NetworkClient.getInstance().sendCommandToServer(new AuthCommand(login, password));
@@ -79,7 +80,7 @@ public class AuthWindowsController implements Initializable {
         if (command.isAuthorized()) {
             setLabelOk("Вход выполнен");
             NetworkClient.getInstance().setUserId(command.getUserID());
-            runWithPause(200, event -> openMainWindow());
+            runWithPause(PAUSE_TIME, event -> openMainWindow());
         } else {
             setLabelError(command.getMessage());
             logInButton.setDisable(false);
@@ -87,7 +88,7 @@ public class AuthWindowsController implements Initializable {
     }
 
     public void startRegistration() {
-        if (!checkTextFields()) {
+        if (!checkLengthsTextFields()) {
             return;
         }
         if (!checkLengthsTextFields()) {
@@ -97,6 +98,7 @@ public class AuthWindowsController implements Initializable {
             setLabelError("Пароли не совпадают!");
             return;
         }
+        final int PAUSE_TIME = 1500;
         final String login = loginText.getText().trim();
         final String password = passwordText.getText().trim();
         NetworkClient.getInstance().sendCommandToServer(new SignUpCommand(login, password));
@@ -105,7 +107,7 @@ public class AuthWindowsController implements Initializable {
         final SignUpCommand command = (SignUpCommand) NetworkClient.getInstance().readCommandFromServer();
         if (command.isSignUp()) {
             setLabelOk("Регистрация выполнена успешно. Переход на окно авторизации");
-            runWithPause(1500, event -> openSignInScreen());
+            runWithPause(PAUSE_TIME, event -> openSignInScreen());
         } else {
             setLabelError(command.getMessage());
             signUpButton.setDisable(false);
@@ -188,10 +190,11 @@ public class AuthWindowsController implements Initializable {
     }
 
     private boolean checkLengthsTextFields() {
-        if (loginText.getText().length() < 3) {
+        final int STRING_MIN_LENGTH = 3;
+        if (loginText.getText().length() < STRING_MIN_LENGTH) {
             setLabelError("Слишком короткое имя пользователя. Допустимо не менее 3-х символов.");
             return false;
-        } else if (passwordText.getText().length() < 3) {
+        } else if (passwordText.getText().length() < STRING_MIN_LENGTH) {
             setLabelError("Слишком короткий пароль. Допустимо не менее 3-х символов.");
             setTextFieldsZeroLength();
             return false;
@@ -215,6 +218,8 @@ public class AuthWindowsController implements Initializable {
 
     private void openMainWindow() {
         try {
+            final int SCREEN_HEIGHT = 550;
+            final int SCREEN_WIDTH = 920;
             final Stage mainWindow = new Stage();
             final FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("/fxml/mainWindow.fxml"));
@@ -238,8 +243,8 @@ public class AuthWindowsController implements Initializable {
             mainWindow.setOnCloseRequest(controller::onExitAction);
             mainWindow.getIcons().add(new Image("img/network_drive.png"));
 
-            mainWindow.setMinHeight(550);
-            mainWindow.setMinWidth(920);
+            mainWindow.setMinHeight(SCREEN_HEIGHT);
+            mainWindow.setMinWidth(SCREEN_WIDTH);
 
             logInButton.getScene().getWindow().hide();
             mainWindow.show();
