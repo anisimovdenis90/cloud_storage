@@ -1,6 +1,7 @@
 package netty.handlers;
 
 import commands.AuthCommand;
+import commands.CheckLoginCommand;
 import commands.SignUpCommand;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -34,9 +35,21 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
             authProcessing(ctx, (AuthCommand) msg);
         } else if (msg instanceof SignUpCommand) {
             signUpProcessing(ctx, (SignUpCommand) msg);
+        } else if (msg instanceof CheckLoginCommand) {
+            checkNotUsedLogin(ctx, (CheckLoginCommand) msg);
         } else {
             ctx.fireChannelRead(msg);
         }
+    }
+
+    private void checkNotUsedLogin(ChannelHandlerContext ctx, CheckLoginCommand command) {
+        final String login = command.getLogin();
+        if (AuthService.getInstance().checkNotUsedUserId(login)) {
+            command.setFree(true);
+        } else {
+            command.setMessage("Указанный логин уже используется");
+        }
+        ctx.writeAndFlush(command);
     }
 
     private void signUpProcessing(ChannelHandlerContext ctx, SignUpCommand command) {

@@ -1,6 +1,7 @@
 package controllers;
 
 import commands.AuthCommand;
+import commands.CheckLoginCommand;
 import commands.SignUpCommand;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -35,6 +36,9 @@ public class AuthWindowsController implements Initializable {
     private TextField loginText;
 
     @FXML
+    private TextField signUpText;
+
+    @FXML
     private PasswordField passwordText;
 
     @FXML
@@ -61,6 +65,13 @@ public class AuthWindowsController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         if (pause == null) {
             pause = new PauseTransition();
+        }
+        if (signUpText != null) {
+            signUpText.focusedProperty().addListener((observable, oldValue, newValue) -> {
+                if (!newValue) {
+                    checkUserLogin();
+                }
+            });
         }
     }
 
@@ -95,6 +106,28 @@ public class AuthWindowsController implements Initializable {
         }
     }
 
+    public void checkUserLogin() {
+        if (signUpText == null) {
+            return;
+        }
+        final String login = signUpText.getText().trim();
+        final int MIN_LOGIN_LENGTH = 3;
+        if (login.isEmpty()) {
+            return;
+        }
+        if (login.length() < MIN_LOGIN_LENGTH) {
+            setLabelError("Слишком короткое имя пользователя. Допустимо не менее 3-х символов.");
+            return;
+        }
+        NetworkClient.getInstance().sendCommandToServer(new CheckLoginCommand(login));
+        final CheckLoginCommand command = (CheckLoginCommand) NetworkClient.getInstance().readCommandFromServer();
+        if (!command.isFree()) {
+            setLabelError(command.getMessage());
+        } else {
+            setLabelError("");
+        }
+    }
+
     public void startRegistration() {
         if (!checkLengthsTextFields()) {
             return;
@@ -107,8 +140,8 @@ public class AuthWindowsController implements Initializable {
             return;
         }
         final int PAUSE_TIME = 1500;
-        final String login = loginText.getText().trim();
-        final String password = passwordText.getText().trim();
+        final String login = signUpText.getText().trim();
+        final String password = BCrypt.hashpw(passwordText.getText().trim(), BCrypt.gensalt());
         NetworkClient.getInstance().sendCommandToServer(new SignUpCommand(login, password));
         signUpButton.setDisable(true);
         setLabelError("Ожидание ответа от сервера...");
@@ -189,7 +222,9 @@ public class AuthWindowsController implements Initializable {
     }
 
     private boolean checkTextFields() {
-        if (loginText.getText().trim().isEmpty() || passwordText.getText().trim().isEmpty()) {
+        if ((signUpText != null && signUpText.getText().trim().isEmpty())
+                || (loginText != null && loginText.getText().trim().isEmpty())
+                || passwordText.getText().trim().isEmpty()) {
             setLabelError("Некорректный ввод данных");
             setTextFieldsZeroLength();
             return false;
@@ -199,7 +234,8 @@ public class AuthWindowsController implements Initializable {
 
     private boolean checkLengthsTextFields() {
         final int STRING_MIN_LENGTH = 3;
-        if (loginText.getText().length() < STRING_MIN_LENGTH) {
+        if ((loginText != null && loginText.getText().length() < STRING_MIN_LENGTH)
+                || (signUpText != null && signUpText.getText().length() < STRING_MIN_LENGTH)) {
             setLabelError("Слишком короткое имя пользователя. Допустимо не менее 3-х символов.");
             return false;
         } else if (passwordText.getText().length() < STRING_MIN_LENGTH) {

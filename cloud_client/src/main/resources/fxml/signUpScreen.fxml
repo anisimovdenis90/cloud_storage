@@ -88,7 +88,7 @@
                         <Insets right="20.0" />
                      </HBox.margin>
                   </ImageView>
-                  <TextField fx:id="loginText" prefHeight="39.0" prefWidth="255.0" promptText="Введите логин" style="-fx-background-color: transparent; -fx-border-width: 0px 0px 2px 0px; -fx-border-color: #a0a2ab; -fx-text-fill: #a0a2ab;">
+                  <TextField fx:id="signUpText" prefHeight="39.0" prefWidth="255.0" promptText="Введите логин" style="-fx-background-color: transparent; -fx-border-width: 0px 0px 2px 0px; -fx-border-color: #a0a2ab; -fx-text-fill: #a0a2ab;">
                      <font>
                         <Font size="14.0" />
                      </font>
