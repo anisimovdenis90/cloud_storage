@@ -41,7 +41,6 @@ public class AuthService {
                     "SELECT id FROM users WHERE login = ? AND password = ?"
             );
             statement.setString(1, login);
-            statement.setString(2, password);
             resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 userID = resultSet.getString("id");

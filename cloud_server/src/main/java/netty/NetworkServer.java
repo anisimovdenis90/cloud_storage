@@ -12,20 +12,23 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import netty.handlers.AuthHandler;
 import services.AuthService;
+import services.DBConnectionImpl;
 import services.DBPooledConnector;
-import services.SQLiteDBConnection;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Properties;
 
 public class NetworkServer {
 
     private static final String SERVER_DIR = "./server";
+    private final Properties properties;
     private final int port;
 
-    public NetworkServer(int port) {
+    public NetworkServer(int port, Properties properties) {
         this.port = port;
+        this.properties = properties;
     }
 
     public void run() {
@@ -47,7 +50,7 @@ public class NetworkServer {
                     });
             ChannelFuture future = bootstrap.bind(port).sync();
             System.out.println("Сервер успешно запущен на порту: " + port);
-            AuthService.getInstance().start(new DBPooledConnector(new SQLiteDBConnection(), 5));
+            AuthService.getInstance().start(new DBPooledConnector(new DBConnectionImpl(properties), 5));
             createMainDirectory();
             future.channel().closeFuture().sync();
         } catch (Exception e) {
