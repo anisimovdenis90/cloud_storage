@@ -22,6 +22,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
+import org.mindrot.jbcrypt.BCrypt;
 import services.NetworkClient;
 
 import java.io.IOException;
@@ -73,14 +74,21 @@ public class AuthWindowsController implements Initializable {
         final int PAUSE_TIME = 200;
         final String login = loginText.getText().trim();
         final String password = passwordText.getText().trim();
-        NetworkClient.getInstance().sendCommandToServer(new AuthCommand(login, password));
+        NetworkClient.getInstance().sendCommandToServer(new AuthCommand(login));
         logInButton.setDisable(true);
         setLabelError("Ожидание ответа от сервера...");
         final AuthCommand command = (AuthCommand) NetworkClient.getInstance().readCommandFromServer();
-        if (command.isAuthorized()) {
-            setLabelOk("Вход выполнен");
-            NetworkClient.getInstance().setUserId(command.getUserID());
-            runWithPause(PAUSE_TIME, event -> openMainWindow());
+        if (!command.isAuthorized()) {
+            if (BCrypt.checkpw(password, command.getPassword())) {
+                command.setAuthorized(true);
+                NetworkClient.getInstance().sendCommandToServer(command);
+                setLabelOk("Вход выполнен");
+                NetworkClient.getInstance().setUserId(command.getId());
+                runWithPause(PAUSE_TIME, event -> openMainWindow());
+            } else {
+                setLabelError("Неверный логин или пароль");
+                logInButton.setDisable(false);
+            }
         } else {
             setLabelError(command.getMessage());
             logInButton.setDisable(false);

@@ -1,5 +1,7 @@
 package services;
 
+import util.SystemUser;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -30,20 +32,22 @@ public class AuthService {
         resetIsLogin();
     }
 
-    public String getUserIDByLoginAndPassword(String login, String password) {
-        String userID = null;
+    public SystemUser getSystemUserByLogin(String login) {
+        SystemUser systemUser = null;
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         try {
             connection = dbConnector.getConnection();
             statement = connection.prepareStatement(
-                    "SELECT id FROM users WHERE login = ? AND password = ?"
+                    "SELECT id, password FROM users WHERE login = ?"
             );
             statement.setString(1, login);
             resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                userID = resultSet.getString("id");
+                systemUser = new SystemUser();
+                systemUser.setId(resultSet.getString("id"));
+                systemUser.setHashedPassword(resultSet.getString("password"));
             }
         } catch (SQLException e) {
             System.err.println("Ошибка получения данных из базы!");
@@ -57,7 +61,7 @@ public class AuthService {
                 e.printStackTrace();
             }
         }
-        return userID;
+        return systemUser;
     }
 
     public synchronized void setIsLogin(String id, boolean isLogin) {
@@ -113,7 +117,7 @@ public class AuthService {
         return false;
     }
 
-    public boolean checkIsUsedUserId(String login) {
+    public boolean checkNotUsedUserId(String login) {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;

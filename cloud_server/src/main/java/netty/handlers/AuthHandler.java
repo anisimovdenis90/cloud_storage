@@ -5,6 +5,7 @@ import commands.SignUpCommand;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import services.AuthService;
+import util.SystemUser;
 
 public class AuthHandler extends ChannelInboundHandlerAdapter {
 
@@ -40,7 +41,7 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
 
     private void signUpProcessing(ChannelHandlerContext ctx, SignUpCommand command) {
         final String login = command.getLogin();
-        if (AuthService.getInstance().checkIsUsedUserId(login)) {
+        if (AuthService.getInstance().checkNotUsedUserId(login)) {
             final String password = command.getPassword();
             AuthService.getInstance().registerNewUser(login, password);
             command.setSignUp(true);
@@ -51,22 +52,27 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void authProcessing(ChannelHandlerContext ctx, AuthCommand command) {
-        final String login = command.getLogin();
-        final String password = command.getPassword();
-        userId = AuthService.getInstance().getUserIDByLoginAndPassword(login, password);
-        if (userId != null) {
-            if (checkAlreadyLogin(userId)) {
-                command.setMessage("Клиент с таким логином уже авторизован");
-                ctx.writeAndFlush(command);
-                return;
-            }
-            command.setAuthorized(true);
-            command.setUserID(userId);
+        if (command.isAuthorized()) {
+            userId = command.getId();
             AuthService.getInstance().setIsLogin(userId, true);
             ctx.pipeline().addLast(new ClientHandler(userId, serverDir));
             ctx.pipeline().remove(this);
             System.out.println("Добавлен обработчик для нового клиента с ID: " + userId);
+            return;
+        }
+        final String login = command.getLogin();
+        final SystemUser systemUser = AuthService.getInstance().getSystemUserByLogin(login);
+        if (systemUser != null) {
+            if (checkAlreadyLogin(systemUser.getId())) {
+                command.setAuthorized(true);
+                command.setMessage("Клиент с таким логином уже авторизован");
+                ctx.writeAndFlush(command);
+                return;
+            }
+            command.setPassword(systemUser.getHashedPassword());
+            command.setId(systemUser.getId());
         } else {
+            command.setAuthorized(true);
             command.setMessage("Неверный логин или пароль");
         }
         ctx.writeAndFlush(command);

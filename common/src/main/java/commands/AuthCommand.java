@@ -7,18 +7,15 @@ public class AuthCommand implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final String login;
-    private final String password;
 
-    private String username;
-    private String userID;
+    private String password;
+    private String id;
+    private String message;
 
     private boolean isAuthorized;
 
-    private String message;
-
-    public AuthCommand(String login, String password) {
+    public AuthCommand(String login) {
         this.login = login;
-        this.password = password;
     }
 
     public String getLogin() {
@@ -29,20 +26,16 @@ public class AuthCommand implements Serializable {
         return password;
     }
 
-    public String getUsername() {
-        return username;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public String getId() {
+        return id;
     }
 
-    public String getUserID() {
-        return userID;
-    }
-
-    public void setUserID(String username) {
-        this.userID = username;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public boolean isAuthorized() {
