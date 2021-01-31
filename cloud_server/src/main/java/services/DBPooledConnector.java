@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -15,7 +16,7 @@ public class DBPooledConnector implements DBConnector {
     private static final boolean FREE_CONNECTION = true;
 
     private final int LIMIT_OF_CONNECTIONS;
-    private final Map<Connection, Boolean> connectionsPool;
+    private final ConcurrentMap<Connection, Boolean> connectionsPool;
     private final DBConnection connector;
     private final ReentrantLock lock;
     private final Semaphore semaphore;
@@ -76,14 +77,10 @@ public class DBPooledConnector implements DBConnector {
 
     @Override
     public void closeConnection(Connection connection) {
-        for (Map.Entry<Connection, Boolean> entry : connectionsPool.entrySet()) {
-            if (entry.getKey().equals(connection)) {
-                entry.setValue(true);
-                System.out.println("Возвращено подключение к базе");
-                checkConnection();
-                semaphore.release();
-            }
-        }
+        connectionsPool.replace(connection, FREE_CONNECTION);
+        System.out.println("Возвращено подключение к базе");
+        checkConnection();
+        semaphore.release();
     }
 
     @Override

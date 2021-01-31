@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,7 +28,7 @@ public class FileTransfer {
 
     private final ExecutorService executor;
     private static volatile FileTransfer instance;
-    private ArrayBlockingQueue<TransferItem> mainQueue;
+    private BlockingQueue<TransferItem> mainQueue;
     private int totalOperations;
     private int performedOperations;
     private long totalOperationsSize;

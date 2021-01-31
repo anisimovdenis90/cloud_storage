@@ -7,16 +7,21 @@ import java.util.Properties;
 
 public class DBConnectionImpl implements DBConnection {
 
+    private static final String PROPERTIES_DB_DRIVER = "server.db.driver";
+    private static final String PROPERTIES_DB_URL = "server.db.url";
+    private static final String PROPERTIES_DB_USERNAME = "server.db.username";
+    private static final String PROPERTIES_DB_PASSWORD = "server.db.password";
+
     private final String dbDriver;
     private final String dbUrl;
     private final String dbUsername;
     private final String dbPassword;
 
     public DBConnectionImpl(Properties properties) {
-        this.dbDriver = properties.getProperty("server.db.driver");
-        this.dbUrl = properties.getProperty("server.db.url");
-        this.dbUsername = properties.getProperty("server.db.username");
-        this.dbPassword = properties.getProperty("server.db.password");
+        this.dbDriver = properties.getProperty(PROPERTIES_DB_DRIVER);
+        this.dbUrl = properties.getProperty(PROPERTIES_DB_URL);
+        this.dbUsername = properties.getProperty(PROPERTIES_DB_USERNAME);
+        this.dbPassword = properties.getProperty(PROPERTIES_DB_PASSWORD);
         if (dbDriver != null && !dbDriver.isEmpty()) {
             start();
         }
