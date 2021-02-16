@@ -3,7 +3,6 @@ package services;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
@@ -35,9 +34,14 @@ public class DBPooledConnector implements DBConnector {
     }
 
     public void start() {
-        final Optional<Connection> connectionOptional = createConnection();
-        connectionOptional.ifPresent(connection -> connectionsPool.put(connection, FREE_CONNECTION));
-        System.out.println("Количество подключений " + connectionsPool.size());
+        try {
+            final Connection connection = createConnection();
+            connectionsPool.put(connection, FREE_CONNECTION);
+            System.out.println("Количество подключений " + connectionsPool.size());
+        } catch (SQLException e) {
+            System.out.println("Ошибка запуска сервера подключений к БД. Невозможно создать подключение.");
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -53,11 +57,8 @@ public class DBPooledConnector implements DBConnector {
                 }
             }
             if (connection == null && connectionsPool.size() < LIMIT_OF_CONNECTIONS) {
-                Optional<Connection> connectionOptional = createConnection();
-                if (connectionOptional.isPresent()) {
-                    connection = connectionOptional.get();
-                    connectionsPool.put(connection, BUSY_CONNECTION);
-                }
+                connection = createConnection();
+                connectionsPool.put(connection, BUSY_CONNECTION);
             }
             if (connection != null) {
                 System.out.println("Отдано подключение к базе");
@@ -106,15 +107,9 @@ public class DBPooledConnector implements DBConnector {
         System.out.println("Свободные подключения " + countOfFreeConnections + " из " + connectionsPool.size());
     }
 
-    private Optional<Connection> createConnection() {
-        try {
-            final Connection connection = connector.createConnection();
-            System.out.println("Создано новое подключение к базе данных");
-            return Optional.of(connection);
-        } catch (SQLException e) {
-            System.err.println("Ошибка создания нового подключения к базе данных!");
-            e.printStackTrace();
-        }
-        return Optional.empty();
+    private Connection createConnection() throws SQLException {
+        final Connection connection = connector.createConnection();
+        System.out.println("Создано новое подключение к базе данных");
+        return connection;
     }
 }
