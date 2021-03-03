@@ -7,11 +7,6 @@ import java.util.Properties;
 
 public class DBConnectionImpl implements DBConnection {
 
-    private static final String PROPERTIES_DB_DRIVER = "server.db.driver";
-    private static final String PROPERTIES_DB_URL = "server.db.url";
-    private static final String PROPERTIES_DB_USERNAME = "server.db.username";
-    private static final String PROPERTIES_DB_PASSWORD = "server.db.password";
-
     private final String dbDriver;
     private final String dbUrl;
     private final String dbUsername;

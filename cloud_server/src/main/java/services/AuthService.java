@@ -44,9 +44,7 @@ public class AuthService {
             statement.setString(1, login);
             final ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                systemUser = new SystemUser();
-                systemUser.setId(resultSet.getString("id"));
-                systemUser.setHashedPassword(resultSet.getString("password"));
+                systemUser = new SystemUser(resultSet.getString("id"), resultSet.getString("password"));
             }
         } finally {
             if (connection != null) dbConnector.closeConnection(connection);
@@ -90,9 +88,6 @@ public class AuthService {
             if (resultSet.next()) {
                 return false;
             }
-        } catch (SQLException e) {
-            System.err.println("Ошибка получения данных из базы!");
-            e.printStackTrace();
         } finally {
             if (connection != null) dbConnector.closeConnection(connection);
         }
@@ -106,9 +101,6 @@ public class AuthService {
             statement.setString(1, login);
             statement.setString(2, password);
             statement.executeUpdate();
-        } catch (SQLException e) {
-            System.err.println("Ошибка изменения данных в базе!");
-            e.printStackTrace();
         } finally {
             if (connection != null) dbConnector.closeConnection(connection);
         }
@@ -123,9 +115,6 @@ public class AuthService {
         final String sql = "UPDATE users SET isLogin = 0";
         try (PreparedStatement statement = connection.prepareStatement(sql);) {
             statement.executeUpdate();
-        } catch (SQLException e) {
-            System.err.println("Ошибка изменения данных в базе!");
-            e.printStackTrace();
         } finally {
             if (connection != null) dbConnector.closeConnection(connection);
         }

@@ -49,18 +49,15 @@ public class DBPooledConnector implements DBConnector {
         try {
             semaphore.acquire();
             lock.lock();
-            Connection connection = null;
             for (Map.Entry<Connection, Boolean> entry : connectionsPool.entrySet()) {
                 if (entry.getValue().equals(FREE_CONNECTION)) {
                     entry.setValue(BUSY_CONNECTION);
-                    connection = entry.getKey();
+                    return entry.getKey();
                 }
             }
-            if (connection == null && connectionsPool.size() < LIMIT_OF_CONNECTIONS) {
-                connection = createConnection();
+            if (connectionsPool.size() < LIMIT_OF_CONNECTIONS) {
+                final Connection connection = createConnection();
                 connectionsPool.put(connection, BUSY_CONNECTION);
-            }
-            if (connection != null) {
                 System.out.println("Отдано подключение к базе");
                 checkConnection();
                 return connection;
@@ -68,12 +65,12 @@ public class DBPooledConnector implements DBConnector {
                 throw new SQLException("Ошибка выделения подключения к базе данных. Нет свободных подключений.");
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             System.out.println("Ошибка выделения подключения к базе данных!");
-            e.printStackTrace();
+            throw new SQLException(String.format("Ошибка выделения подключения к базе данных! Поток %s завершен", Thread.currentThread().getName()));
         } finally {
             lock.unlock();
         }
-        throw new SQLException("Ошибка подключения к БД.");
     }
 
     @Override
