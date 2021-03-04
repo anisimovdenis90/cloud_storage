@@ -5,6 +5,11 @@ public class SystemUser {
     private String id;
     private String hashedPassword;
 
+    public SystemUser(String id, String hashedPassword) {
+        this.id = id;
+        this.hashedPassword = hashedPassword;
+    }
+
     public String getId() {
         return id;
     }

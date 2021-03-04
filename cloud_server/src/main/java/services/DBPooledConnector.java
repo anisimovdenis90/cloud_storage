@@ -3,7 +3,6 @@ package services;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
@@ -35,9 +34,14 @@ public class DBPooledConnector implements DBConnector {
     }
 
     public void start() {
-        final Optional<Connection> connectionOptional = createConnection();
-        connectionOptional.ifPresent(connection -> connectionsPool.put(connection, FREE_CONNECTION));
-        System.out.println("Количество подключений " + connectionsPool.size());
+        try {
+            final Connection connection = createConnection();
+            connectionsPool.put(connection, FREE_CONNECTION);
+            System.out.println("Количество подключений " + connectionsPool.size());
+        } catch (SQLException e) {
+            System.out.println("Ошибка запуска сервера подключений к БД. Невозможно создать подключение.");
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -45,21 +49,15 @@ public class DBPooledConnector implements DBConnector {
         try {
             semaphore.acquire();
             lock.lock();
-            Connection connection = null;
             for (Map.Entry<Connection, Boolean> entry : connectionsPool.entrySet()) {
                 if (entry.getValue().equals(FREE_CONNECTION)) {
                     entry.setValue(BUSY_CONNECTION);
-                    connection = entry.getKey();
+                    return entry.getKey();
                 }
             }
-            if (connection == null && connectionsPool.size() < LIMIT_OF_CONNECTIONS) {
-                Optional<Connection> connectionOptional = createConnection();
-                if (connectionOptional.isPresent()) {
-                    connection = connectionOptional.get();
-                    connectionsPool.put(connection, BUSY_CONNECTION);
-                }
-            }
-            if (connection != null) {
+            if (connectionsPool.size() < LIMIT_OF_CONNECTIONS) {
+                final Connection connection = createConnection();
+                connectionsPool.put(connection, BUSY_CONNECTION);
                 System.out.println("Отдано подключение к базе");
                 checkConnection();
                 return connection;
@@ -67,12 +65,12 @@ public class DBPooledConnector implements DBConnector {
                 throw new SQLException("Ошибка выделения подключения к базе данных. Нет свободных подключений.");
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             System.out.println("Ошибка выделения подключения к базе данных!");
-            e.printStackTrace();
+            throw new SQLException(String.format("Ошибка выделения подключения к базе данных! Поток %s завершен", Thread.currentThread().getName()));
         } finally {
             lock.unlock();
         }
-        throw new SQLException("Ошибка подключения к БД.");
     }
 
     @Override
@@ -106,15 +104,9 @@ public class DBPooledConnector implements DBConnector {
         System.out.println("Свободные подключения " + countOfFreeConnections + " из " + connectionsPool.size());
     }
 
-    private Optional<Connection> createConnection() {
-        try {
-            final Connection connection = connector.createConnection();
-            System.out.println("Создано новое подключение к базе данных");
-            return Optional.of(connection);
-        } catch (SQLException e) {
-            System.err.println("Ошибка создания нового подключения к базе данных!");
-            e.printStackTrace();
-        }
-        return Optional.empty();
+    private Connection createConnection() throws SQLException {
+        final Connection connection = connector.createConnection();
+        System.out.println("Создано новое подключение к базе данных");
+        return connection;
     }
 }

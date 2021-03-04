@@ -9,6 +9,6 @@ CREATE TABLE `users` (
   UNIQUE INDEX `login_UNIQUE` (`login`)
 );
 
-INSERT INTO `cloud_users`.`users` (login, password) VALUES
+INSERT INTO `users` (login, password) VALUES
 ('user1', '$2a$10$QAAvr27w6iBfoKEWYQmNvuZBWaa8E4ltyMWrZxk95klp0hH52cYRC'),
 ('user2', '$2a$10$iUAzB.MAUJTMlCLvBNGfAevhjKEXrUitAFOJmQV0Qsw2pVefJLBpS');

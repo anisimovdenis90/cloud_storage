@@ -8,23 +8,18 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 import org.mindrot.jbcrypt.BCrypt;
 import services.NetworkClient;
+import util.StageBuilder;
 
 import java.io.IOException;
 import java.net.URL;
@@ -60,6 +55,12 @@ public class AuthWindowsController implements Initializable {
     private Button signInScreenButton;
 
     private PauseTransition pause;
+
+    private StageBuilder stageBuilder;
+
+    public void setStageBuilder(StageBuilder stageBuilder) {
+        this.stageBuilder = stageBuilder;
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -170,55 +171,30 @@ public class AuthWindowsController implements Initializable {
     }
 
     public void openSignUpScreen() {
-        try {
-            showNewStage((Stage) signUpScreenButton.getScene().getWindow(),
-                    "/fxml/signUpScreen.fxml",
-                    "Регистрация",
-                    event -> {
-                        NetworkClient.getInstance().stop();
-                        Platform.exit();
-                    });
-        } catch (IOException e) {
-            System.out.println("Ошибка загрузки экрана регистрации");
-            e.printStackTrace();
-        }
+        showNewStage("/fxml/signUpScreen.fxml", "Регистрация");
     }
 
     public void openSignInScreen() {
-        try {
-            showNewStage((Stage) signInScreenButton.getScene().getWindow(),
-                    "/fxml/logInScreen.fxml",
-                    "Авторизация",
-                    event -> {
-                        NetworkClient.getInstance().stop();
-                        Platform.exit();
-                    });
-        } catch (IOException e) {
-            System.out.println("Ошибка загрузки экрана авторизации");
-            e.printStackTrace();
-        }
+        showNewStage("/fxml/logInScreen.fxml", "Авторизация");
     }
 
-    private void showNewStage(Stage stage, String FXMLFile, String title, EventHandler<WindowEvent> onCloseEvent) throws IOException {
-        final FXMLLoader fxmlLoader = new FXMLLoader();
-        fxmlLoader.setLocation(getClass().getResource(FXMLFile));
-        final Parent root = fxmlLoader.load();
-        final AuthWindowsController controller = fxmlLoader.getController();
-        NetworkClient.getInstance().setAuthWindowsController(controller);
-        final Scene newScene = new Scene(root);
-        newScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
-            if (event.getCode().equals(KeyCode.ENTER)) {
-                if (title.equals("Регистрация")) {
-                    controller.startRegistration();
-                } else if (title.equals("Авторизация")) {
-                    controller.startAuthentication();
-                }
-            }
-        });
-        newScene.getStylesheets().add((getClass().getResource("/css/style.css")).toExternalForm());
-        stage.setTitle(title);
-        stage.setScene(newScene);
-        stage.setOnCloseRequest(onCloseEvent);
+    private void showNewStage(String FXMLFile, String title) {
+        try {
+            stageBuilder.addResource(FXMLFile)
+                    .addSceneEventHandler(KeyEvent.KEY_RELEASED, event -> {
+                        if (event.getCode().equals(KeyCode.ENTER)) {
+                            if (title.equals("Регистрация")) {
+                                ((AuthWindowsController) stageBuilder.getController()).startRegistration();
+                            } else if (title.equals("Авторизация")) {
+                                ((AuthWindowsController) stageBuilder.getController()).startAuthentication();
+                            }
+                        }
+                    })
+                    .setTitle(title);
+        } catch (IOException e) {
+            System.out.println("Ошибка загрузки fxml ресурса " + FXMLFile);
+            e.printStackTrace();
+        }
     }
 
     private boolean checkTextFields() {
@@ -264,34 +240,32 @@ public class AuthWindowsController implements Initializable {
         try {
             final int SCREEN_HEIGHT = 550;
             final int SCREEN_WIDTH = 920;
-            final Stage mainWindow = new Stage();
-            final FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(getClass().getResource("/fxml/mainWindow.fxml"));
-            final Scene mainScene = new Scene(loader.load());
-            final MainWindowController controller = loader.getController();
-            mainScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
-                if (event.getCode().equals(KeyCode.DELETE)) {
-                    controller.deleteButtonAction();
-                }
-                if (event.getCode().equals(KeyCode.SPACE)) {
-                    if (controller.getMaximizeOperations().isDisabled()) {
-                        controller.minimizeOperationsTable();
-                    } else {
-                        controller.maximizeOperationsTable();
-                    }
-                }
-            });
-            mainScene.getStylesheets().add((getClass().getResource("/css/style.css")).toExternalForm());
-            mainWindow.setTitle("Cloud Drive");
-            mainWindow.setScene(mainScene);
-            mainWindow.setOnCloseRequest(controller::onExitAction);
-            mainWindow.getIcons().add(new Image("img/network_drive.png"));
+            final String MAIN_WINDOW_FXML = "/fxml/mainWindow.fxml";
+            final MainWindowController controller = new MainWindowController();
 
-            mainWindow.setMinHeight(SCREEN_HEIGHT);
-            mainWindow.setMinWidth(SCREEN_WIDTH);
+            final StageBuilder stageBuilder = StageBuilder.build()
+                    .addResource(MAIN_WINDOW_FXML, controller)
+                    .addSceneEventHandler(KeyEvent.KEY_RELEASED, event -> {
+                        if (event.getCode().equals(KeyCode.DELETE)) {
+                            controller.deleteButtonAction();
+                        }
+                        if (event.getCode().equals(KeyCode.SPACE)) {
+                            if (controller.getMaximizeOperations().isDisabled()) {
+                                controller.minimizeOperationsTable();
+                            } else {
+                                controller.maximizeOperationsTable();
+                            }
+                        }
+                    })
+                    .addStylesheet("/css/style.css")
+                    .setTitle("Cloud Drive")
+                    .setIcon("img/network_drive.png")
+                    .setOnClosedAction(controller::onExitAction)
+                    .setMinWidth(SCREEN_WIDTH)
+                    .setMinHeight(SCREEN_HEIGHT);
 
             logInButton.getScene().getWindow().hide();
-            mainWindow.show();
+            stageBuilder.getStage().show();
         } catch (IOException e) {
             System.out.println("Ошибка загрузки главного экрана приложения");
             e.printStackTrace();

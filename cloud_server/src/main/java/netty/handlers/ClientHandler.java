@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,7 +44,12 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         System.out.printf("Клиент отключился по адресу %s%n", ctx.channel().remoteAddress().toString());
-        AuthService.getInstance().setIsLogin(userId, false);
+        try {
+            AuthService.getInstance().setIsLogin(userId, false);
+        } catch (SQLException e) {
+            System.out.printf("Ошибка изменения данных в БД в процессе отключения пользователя %s по адресу %s%n", userId, ctx.channel().remoteAddress());
+            e.printStackTrace();
+        }
         checkFileWriter();
         executor.shutdownNow();
         ctx.close();
@@ -53,8 +59,8 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         try {
             if (fileWriter != null) {
                 fileWriter.close();
-                System.out.println("Выполнено удаление частично полученного файла от клиента " + wroteFilePath);
                 Files.delete(wroteFilePath);
+                System.out.println("Выполнено удаление частично полученного файла от клиента " + wroteFilePath);
             }
         } catch (IOException e) {
             e.printStackTrace();

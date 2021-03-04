@@ -8,6 +8,8 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import services.AuthService;
 import util.SystemUser;
 
+import java.sql.SQLException;
+
 public class AuthHandler extends ChannelInboundHandlerAdapter {
 
     private final String serverDir;
@@ -19,13 +21,18 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        System.out.printf("Клиент подключился по адресу %s%n", ctx.channel().remoteAddress().toString());
+        System.out.printf("Клиент подключился по адресу %s%n", ctx.channel().remoteAddress());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        System.out.printf("Клиент отключился по адресу %s%n", ctx.channel().remoteAddress().toString());
-        AuthService.getInstance().setIsLogin(userId, false);
+        System.out.printf("Клиент %s отключился по адресу %s%n", userId, ctx.channel().remoteAddress());
+        try {
+            AuthService.getInstance().setIsLogin(userId, false);
+        } catch (SQLException e) {
+            System.out.printf("Ошибка изменения данных в БД в процессе отключения пользователя %s по адресу %s%n", userId, ctx.channel().remoteAddress());
+            e.printStackTrace();
+        }
         ctx.close();
     }
 
@@ -43,38 +50,59 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void checkNotUsedLogin(ChannelHandlerContext ctx, CheckLoginCommand command) {
-        final String login = command.getLogin();
-        if (AuthService.getInstance().checkNotUsedUserId(login)) {
-            command.setFree(true);
-        } else {
-            command.setMessage("Указанный логин уже используется");
+        try {
+            final String login = command.getLogin();
+            if (AuthService.getInstance().checkNotUsedUserId(login)) {
+                command.setFree(true);
+            } else {
+                command.setMessage("Указанный логин уже используется");
+            }
+            ctx.writeAndFlush(command);
+        } catch (SQLException e) {
+            System.out.printf("Ошибка чтения данных из БД в процессе проверки логина пользователя %s по адресу %s%n", userId, ctx.channel().remoteAddress());
+            e.printStackTrace();
         }
-        ctx.writeAndFlush(command);
     }
 
     private void signUpProcessing(ChannelHandlerContext ctx, SignUpCommand command) {
-        final String login = command.getLogin();
-        if (AuthService.getInstance().checkNotUsedUserId(login)) {
-            final String password = command.getPassword();
-            AuthService.getInstance().registerNewUser(login, password);
-            command.setSignUp(true);
-        } else {
-            command.setMessage("Указанный логин уже используется");
+        try {
+            final String login = command.getLogin();
+            if (AuthService.getInstance().checkNotUsedUserId(login)) {
+                final String password = command.getPassword();
+                AuthService.getInstance().registerNewUser(login, password);
+                command.setSignUp(true);
+            } else {
+                command.setMessage("Указанный логин уже используется");
+            }
+            ctx.writeAndFlush(command);
+        } catch (SQLException e) {
+            System.out.printf("Ошибка сохранения данных в БД в процессе регистрации нового пользователя %s по адресу %s%n", userId, ctx.channel().remoteAddress());
+            e.printStackTrace();
         }
-        ctx.writeAndFlush(command);
     }
 
     private void authProcessing(ChannelHandlerContext ctx, AuthCommand command) {
         if (command.isAuthorized()) {
             userId = command.getId();
-            AuthService.getInstance().setIsLogin(userId, true);
+            try {
+                AuthService.getInstance().setIsLogin(userId, true);
+            } catch (SQLException e) {
+                System.out.printf("Ошибка изменения данных в БД в процессе аутентификации пользователя %s по адресу %s%n", userId, ctx.channel().remoteAddress());
+                e.printStackTrace();
+            }
             ctx.pipeline().addLast(new ClientHandler(userId, serverDir));
             ctx.pipeline().remove(this);
             System.out.println("Добавлен обработчик для нового клиента с ID: " + userId);
             return;
         }
         final String login = command.getLogin();
-        final SystemUser systemUser = AuthService.getInstance().getSystemUserByLogin(login);
+        SystemUser systemUser = null;
+        try {
+            systemUser = AuthService.getInstance().getSystemUserByLogin(login);
+        } catch (SQLException e) {
+            System.out.print("Ошибка получения данных из БД в процессе аутентификации");
+            e.printStackTrace();
+        }
         if (systemUser != null) {
             if (checkAlreadyLogin(systemUser.getId())) {
                 command.setAuthorized(true);
@@ -92,12 +120,23 @@ public class AuthHandler extends ChannelInboundHandlerAdapter {
     }
 
     private boolean checkAlreadyLogin(String userId) {
-        return AuthService.getInstance().isLogin(userId);
+        try {
+            return AuthService.getInstance().isLogin(userId);
+        } catch (SQLException e) {
+            System.out.printf("Ошибка чтения данных из БД в процессе аутентификации пользователя %s%n", userId);
+            e.printStackTrace();
+        }
+        return false;
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        AuthService.getInstance().setIsLogin(userId, false);
+        try {
+            AuthService.getInstance().setIsLogin(userId, false);
+        } catch (SQLException e) {
+            System.out.printf("Ошибка изменения данных в БД в процессе отключения пользователя %s по адресу %s%n%n", userId, ctx.channel().remoteAddress());
+            e.printStackTrace();
+        }
         cause.printStackTrace();
         ctx.close();
     }
