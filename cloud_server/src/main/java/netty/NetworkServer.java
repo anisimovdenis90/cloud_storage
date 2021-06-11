@@ -13,6 +13,7 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import netty.handlers.AuthHandler;
 import services.AuthService;
 import services.DBConnectionImpl;
+import services.DBHikariConnector;
 import services.DBPooledConnector;
 
 import java.io.IOException;
@@ -50,7 +51,8 @@ public class NetworkServer {
                     });
             ChannelFuture future = bootstrap.bind(port).sync();
             System.out.println("Сервер успешно запущен на порту: " + port);
-            AuthService.getInstance().start(new DBPooledConnector(new DBConnectionImpl(properties), 5));
+//            AuthService.getInstance().start(new DBPooledConnector(new DBConnectionImpl(properties), 5));
+            AuthService.getInstance().start(new DBHikariConnector("datasource.properties"));
             createMainDirectory();
             future.channel().closeFuture().sync();
         } catch (Exception e) {
