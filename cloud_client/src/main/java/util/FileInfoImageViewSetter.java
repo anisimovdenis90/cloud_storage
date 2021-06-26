@@ -2,20 +2,19 @@ package util;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import org.ehcache.Cache;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static javafx.embed.swing.SwingFXUtils.toFXImage;
 
 public class FileInfoImageViewSetter {
 
-    private static final Map<String, Image> imageCash = new ConcurrentHashMap<>();
+    private static final Cache<String, Image> imageCash = CacheHelper.createCache("imageCache", String.class, Image.class, 100);
     private static final String KEY_FOR_DIR = "directory";
     private static final Image folderIcon = new Image("img/folder.png");
     private static final Image fileIcon = new Image("img/file.png");
