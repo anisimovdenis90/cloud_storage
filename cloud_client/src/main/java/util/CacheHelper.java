@@ -13,8 +13,7 @@ public class CacheHelper {
     static {
         cacheManager = CacheManagerBuilder
                 .newCacheManagerBuilder()
-                .build();
-        cacheManager.init();
+                .build(true);
     }
 
     public static <K, V> Cache<K, V> createCache(String alias, Class<K> keyType, Class<V> valueType, long cacheSize) {

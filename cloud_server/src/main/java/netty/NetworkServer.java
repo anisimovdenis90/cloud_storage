@@ -11,10 +11,7 @@ import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import netty.handlers.AuthHandler;
-import services.AuthService;
-import services.DBConnectionImpl;
-import services.DBHikariConnector;
-import services.DBPooledConnector;
+import services.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,13 +20,21 @@ import java.util.Properties;
 
 public class NetworkServer {
 
-    private static final String SERVER_DIR = "./server";
-    private final Properties properties;
-    private final int port;
+    private static final int DEFAULT_PORT = 8189;
 
-    public NetworkServer(int port, Properties properties) {
-        this.port = port;
-        this.properties = properties;
+    private static final String SERVER_DIR = "./server";
+    private static final String PROPERTIES_SERVER_PORT = "server.port";
+    private final DBConnector dbConnector;
+    private int port;
+
+    public NetworkServer(Properties properties) {
+        try {
+            port = Integer.parseInt(properties.getProperty(PROPERTIES_SERVER_PORT));
+        } catch (NumberFormatException e) {
+            port = DEFAULT_PORT;
+            System.err.println("Ошибка чтения порта из файла конфигурации, использован порт по умолчанию: " + DEFAULT_PORT);
+        }
+        dbConnector = new DBHikariConnector(properties);
     }
 
     public void run() {
@@ -51,12 +56,11 @@ public class NetworkServer {
                     });
             ChannelFuture future = bootstrap.bind(port).sync();
             System.out.println("Сервер успешно запущен на порту: " + port);
-//            AuthService.getInstance().start(new DBPooledConnector(new DBConnectionImpl(properties), 5));
-            AuthService.getInstance().start(new DBHikariConnector("datasource.properties"));
+            AuthService.getInstance().start(dbConnector);
             createMainDirectory();
             future.channel().closeFuture().sync();
         } catch (Exception e) {
-            System.out.println("Ошибка в работе сервера");
+            System.err.println("Ошибка в работе сервера");
             e.printStackTrace();
         } finally {
             AuthService.getInstance().stop();

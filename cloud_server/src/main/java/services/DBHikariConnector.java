@@ -5,13 +5,23 @@ import com.zaxxer.hikari.HikariDataSource;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class DBHikariConnector implements DBConnector {
 
     private final HikariDataSource dataSource;
 
-    public DBHikariConnector(String propertyFile) {
-        this.dataSource = new HikariDataSource(new HikariConfig(propertyFile));
+    public DBHikariConnector(Properties properties) {
+        this.dataSource = new HikariDataSource(createConfig(properties));
+    }
+
+    private HikariConfig createConfig(Properties properties) {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(properties.getProperty(DBPropertyNames.URL.name));
+        config.setUsername(properties.getProperty(DBPropertyNames.USERNAME.name));
+        config.setPassword(properties.getProperty(DBPropertyNames.PASSWORD.name));
+        config.setMaximumPoolSize(Integer.parseInt(properties.getProperty(DBPropertyNames.MAXIMUM_POOL_SIZE.name, "5")));
+        return config;
     }
 
     @Override

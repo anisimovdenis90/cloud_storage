@@ -1,8 +1,10 @@
 package services;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Semaphore;
@@ -14,26 +16,34 @@ public class DBPooledConnector implements DBConnector {
     private static final boolean BUSY_CONNECTION = false;
     private static final boolean FREE_CONNECTION = true;
 
-    private final int LIMIT_OF_CONNECTIONS;
+    private final int connectionsLimit;
     private final ConcurrentMap<Connection, Boolean> connectionsPool;
-    private final DBConnection connector;
+    private final String dbUrl;
     private final ReentrantLock lock;
     private final Semaphore semaphore;
+    private final Properties properties;
 
-    public DBPooledConnector(DBConnection connector, int connectionsLimit) {
-        this.connector = connector;
-        this.LIMIT_OF_CONNECTIONS = connectionsLimit;
+    public DBPooledConnector(Properties properties, int connectionsLimit) {
+        this.properties = properties;
+        this.connectionsLimit = connectionsLimit;
+        dbUrl = properties.getProperty(DBPropertyNames.URL.name);
         connectionsPool = new ConcurrentHashMap<>();
         semaphore = new Semaphore(connectionsLimit, true);
         lock = new ReentrantLock();
         start();
     }
 
-    public DBPooledConnector(DBConnection connector) {
-        this(connector, DEFAULT_LIMIT_OF_CONNECTIONS);
+    public DBPooledConnector(Properties properties) {
+        this(properties, DEFAULT_LIMIT_OF_CONNECTIONS);
     }
 
     public void start() {
+        try {
+            Class.forName(properties.getProperty(DBPropertyNames.DRIVER.name));
+        } catch (ClassNotFoundException e) {
+            System.err.println("Ошибка загрузки драйвера базы данных!");
+            e.printStackTrace();
+        }
         try {
             final Connection connection = createConnection();
             connectionsPool.put(connection, FREE_CONNECTION);
@@ -55,7 +65,7 @@ public class DBPooledConnector implements DBConnector {
                     return entry.getKey();
                 }
             }
-            if (connectionsPool.size() < LIMIT_OF_CONNECTIONS) {
+            if (connectionsPool.size() < connectionsLimit) {
                 final Connection connection = createConnection();
                 connectionsPool.put(connection, BUSY_CONNECTION);
                 System.out.println("Отдано подключение к базе");
@@ -105,7 +115,7 @@ public class DBPooledConnector implements DBConnector {
     }
 
     private Connection createConnection() throws SQLException {
-        final Connection connection = connector.createConnection();
+        final Connection connection = DriverManager.getConnection(dbUrl, properties);
         System.out.println("Создано новое подключение к базе данных");
         return connection;
     }
