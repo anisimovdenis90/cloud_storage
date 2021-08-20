@@ -70,7 +70,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         if (cause instanceof IOException) {
-            System.out.printf("Соединение с клиентом %s по адресу %s%n", userId, ctx.channel().remoteAddress().toString());
+            System.out.printf("Соединение с клиентом %s по адресу %s%n закрыто", userId, ctx.channel().remoteAddress().toString());
         } else {
             System.out.printf("Ошибка обработчика клиента %s по адресу %s%n", userId, ctx.channel().remoteAddress().toString());
             cause.printStackTrace();
@@ -229,7 +229,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
         try {
             final Path newFolderPath = Paths.get(serverDir, command.getFolderName());
             Files.createDirectories(newFolderPath);
-            final String message = "Папка \"" + newFolderPath.toString() + "\" успешно создана";
+            final String message = "Папка \"" + newFolderPath + "\" успешно создана";
             ctx.writeAndFlush(new MessageCommand(message));
             System.out.println(message);
         } catch (IOException e) {

@@ -51,7 +51,7 @@ public class FileInfo implements Serializable {
             this.typeName = type.getName();
             this.lastModified = LocalDateTime.ofInstant(Files.getLastModifiedTime(path).toInstant(), ZoneOffset.ofHours(3)).format(dtf);
         } catch (IOException e) {
-            throw new RuntimeException("Невозможно создать список файлов из папки " + path.toString());
+            throw new RuntimeException("Невозможно создать список файлов из папки " + path);
         }
     }
 

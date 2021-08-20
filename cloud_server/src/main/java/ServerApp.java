@@ -6,20 +6,17 @@ import java.util.Properties;
 
 public class ServerApp {
 
-    private static final int DEFAULT_PORT = 8189;
     private static final String PROPERTIES_FILE = "./server.properties";
-    private static final String PROPERTIES_SERVER_PORT = "server.port";
+
     private static final Properties properties = new Properties();
 
     public static void main(String[] args) {
-        int port;
         try (FileInputStream fis = new FileInputStream(PROPERTIES_FILE)) {
             properties.load(fis);
-            port = Integer.parseInt(properties.getProperty(PROPERTIES_SERVER_PORT));
-        } catch (IOException | NumberFormatException e) {
-            port = DEFAULT_PORT;
+            new NetworkServer(properties).run();
+        } catch (IOException e) {
+            System.err.println("Запуск сервера невозможен: ошибка чтения файла конфигурации: " + PROPERTIES_FILE);
             e.printStackTrace();
         }
-        new NetworkServer(port, properties).run();
     }
 }
